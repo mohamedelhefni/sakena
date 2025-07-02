@@ -3,8 +3,8 @@ import encryptionService from '../utils/encryption.js'
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
-        isAuthenticated: false,
-        userPin: null
+        isAuthenticated: localStorage.getItem('enfrag_isAuthenticated') === 'true',
+        userPin: localStorage.getItem('enfrag_userPin') || null
     }),
 
     actions: {
@@ -22,10 +22,20 @@ export const useAuthStore = defineStore('auth', {
 
                 this.isAuthenticated = true
                 this.userPin = pin
+                
+                // Save authentication state in localStorage
+                localStorage.setItem('enfrag_isAuthenticated', 'true')
+                localStorage.setItem('enfrag_userPin', pin)
+                
                 return { success: true }
             } catch (error) {
                 this.isAuthenticated = false
                 this.userPin = null
+                
+                // Clear authentication state in localStorage
+                localStorage.removeItem('enfrag_isAuthenticated')
+                localStorage.removeItem('enfrag_userPin')
+                
                 return { success: false, error: 'رقم PIN غير صحيح' }
             }
         },
@@ -34,6 +44,10 @@ export const useAuthStore = defineStore('auth', {
             this.isAuthenticated = false
             this.userPin = null
             encryptionService.setSecretKey(null)
+            
+            // Clear authentication state in localStorage
+            localStorage.removeItem('enfrag_isAuthenticated')
+            localStorage.removeItem('enfrag_userPin')
         },
 
         async setupPin(pin) {
@@ -42,12 +56,20 @@ export const useAuthStore = defineStore('auth', {
                 this.isAuthenticated = true
                 this.userPin = pin
 
+                // Save authentication state in localStorage
+                localStorage.setItem('enfrag_isAuthenticated', 'true')
+                localStorage.setItem('enfrag_userPin', pin)
+
                 // Initialize with empty data to test encryption
                 const testData = {}
                 encryptionService.encrypt(testData)
 
                 return { success: true }
             } catch (error) {
+                // Clear authentication state in localStorage
+                localStorage.removeItem('enfrag_isAuthenticated')
+                localStorage.removeItem('enfrag_userPin')
+                
                 return { success: false, error: 'فشل في إعداد رقم PIN' }
             }
         },

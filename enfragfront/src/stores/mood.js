@@ -73,6 +73,16 @@ export const useMoodStore = defineStore('mood', {
             await database.saveData('moodEntries', this.moodEntries)
         },
 
+        async updateMoodEntry(updatedEntry) {
+            const index = this.moodEntries.findIndex(entry => entry.id === updatedEntry.id)
+            if (index !== -1) {
+                this.moodEntries[index] = updatedEntry
+                await database.saveData('moodEntries', this.moodEntries)
+                return true
+            }
+            return false
+        },
+
         getMoodText(level) {
             const moodTexts = {
                 1: 'سيء جداً',
