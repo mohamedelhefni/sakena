@@ -1,0 +1,13 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#047857;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="80" fill="url(#bg)"/>
+  <g transform="translate(128,128)">
+    <path fill="white" d="M128 64C128 28.7 156.7 0 192 0s64 28.7 64 64-28.7 64-64 64-64-28.7-64-64zM21.3 256c0-23.5 19.1-42.7 42.7-42.7h341.3c23.5 0 42.7 19.1 42.7 42.7s-19.1 42.7-42.7 42.7H64c-23.5 0-42.7-19.1-42.7-42.7zm256 85.3H106.7c-35.3 0-64 28.7-64 64s28.7 64 64 64h170.7c35.3 0 64-28.7 64-64s-28.7-64-64-64z"/>
+  </g>
+  <text x="256" y="420" font-family="Arial" font-size="48" font-weight="bold" text-anchor="middle" fill="white">انفراج</text>
+</svg>
