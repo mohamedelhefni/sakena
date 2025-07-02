@@ -1,147 +1,98 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { 
-  saveMoodLog, 
-  getMoodLogs, 
-  saveJournalEntry, 
-  getJournalEntries,
-  saveThoughtRecord,
-  getThoughtRecords
-} from '@/utils/database'
+import database from '../utils/database.js'
 
-export const useMoodStore = defineStore('mood', () => {
-  const currentMood = ref(null)
-  const moodHistory = ref([])
-  const journalEntries = ref([])
-  const thoughtRecords = ref([])
-  const isLoading = ref(false)
+export const useMoodStore = defineStore('mood', {
+    state: () => ({
+        moodEntries: [],
+        currentMood: null,
+        anxietyLevel: null,
+        depressionLevel: null
+    }),
 
-  // Mood tracking
-  async function logMood(moodData) {
-    isLoading.value = true
-    try {
-      const entry = {
-        date: new Date().toISOString(),
-        mood: moodData.mood,
-        energy: moodData.energy,
-        anxiety: moodData.anxiety,
-        notes: moodData.notes || '',
-        activities: moodData.activities || []
-      }
-      
-      await saveMoodLog(entry)
-      await loadMoodHistory()
-      return true
-    } catch (error) {
-      console.error('Failed to save mood log:', error)
-      return false
-    } finally {
-      isLoading.value = false
+    getters: {
+        recentMoods: (state) => {
+            return state.moodEntries
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 7)
+        },
+
+        averageMood: (state) => {
+            if (state.moodEntries.length === 0) return 0
+            const sum = state.moodEntries.reduce((acc, entry) => acc + entry.mood, 0)
+            return Math.round(sum / state.moodEntries.length)
+        },
+
+        averageAnxiety: (state) => {
+            const anxietyEntries = state.moodEntries.filter(entry => entry.anxiety !== undefined)
+            if (anxietyEntries.length === 0) return 0
+            const sum = anxietyEntries.reduce((acc, entry) => acc + entry.anxiety, 0)
+            return Math.round(sum / anxietyEntries.length)
+        },
+
+        averageDepression: (state) => {
+            const depressionEntries = state.moodEntries.filter(entry => entry.depression !== undefined)
+            if (depressionEntries.length === 0) return 0
+            const sum = depressionEntries.reduce((acc, entry) => acc + entry.depression, 0)
+            return Math.round(sum / depressionEntries.length)
+        }
+    },
+
+    actions: {
+        async loadMoodData() {
+            try {
+                const data = database.getData('moodEntries')
+                this.moodEntries = data || []
+            } catch (error) {
+                console.error('Error loading mood data:', error)
+                this.moodEntries = []
+            }
+        },
+
+        async saveMoodEntry(entry) {
+            const moodEntry = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                mood: entry.mood,
+                anxiety: entry.anxiety,
+                depression: entry.depression,
+                notes: entry.notes || '',
+                activities: entry.activities || [],
+                triggers: entry.triggers || []
+            }
+
+            this.moodEntries.push(moodEntry)
+            await database.saveData('moodEntries', this.moodEntries)
+
+            this.currentMood = moodEntry.mood
+            this.anxietyLevel = moodEntry.anxiety
+            this.depressionLevel = moodEntry.depression
+        },
+
+        async deleteMoodEntry(id) {
+            this.moodEntries = this.moodEntries.filter(entry => entry.id !== id)
+            await database.saveData('moodEntries', this.moodEntries)
+        },
+
+        getMoodText(level) {
+            const moodTexts = {
+                1: 'سيء جداً',
+                2: 'سيء',
+                3: 'متوسط',
+                4: 'جيد',
+                5: 'ممتاز'
+            }
+            return moodTexts[level] || 'غير محدد'
+        },
+
+        getMoodColor(level) {
+            const colors = {
+                1: 'bg-red-500',
+                2: 'bg-orange-500',
+                3: 'bg-yellow-500',
+                4: 'bg-green-500',
+                5: 'bg-emerald-500'
+            }
+            return colors[level] || 'bg-gray-500'
+        }
     }
-  }
-
-  async function loadMoodHistory(days = 30) {
-    isLoading.value = true
-    try {
-      const endDate = new Date().toISOString()
-      const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
-      
-      moodHistory.value = await getMoodLogs(startDate, endDate)
-    } catch (error) {
-      console.error('Failed to load mood history:', error)
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  // Journal functionality
-  async function saveJournal(content, prompt = '') {
-    isLoading.value = true
-    try {
-      const entry = {
-        date: new Date().toISOString(),
-        content,
-        prompt,
-        wordCount: content.split(' ').length
-      }
-      
-      await saveJournalEntry(entry)
-      await loadJournalHistory()
-      return true
-    } catch (error) {
-      console.error('Failed to save journal entry:', error)
-      return false
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  async function loadJournalHistory(days = 30) {
-    isLoading.value = true
-    try {
-      const endDate = new Date().toISOString()
-      const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
-      
-      journalEntries.value = await getJournalEntries(startDate, endDate)
-    } catch (error) {
-      console.error('Failed to load journal entries:', error)
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  // CBT Thought Records
-  async function saveThought(thoughtData) {
-    isLoading.value = true
-    try {
-      const record = {
-        date: new Date().toISOString(),
-        situation: thoughtData.situation,
-        automaticThought: thoughtData.automaticThought,
-        emotion: thoughtData.emotion,
-        emotionIntensity: thoughtData.emotionIntensity,
-        evidence: thoughtData.evidence || '',
-        balancedThought: thoughtData.balancedThought || '',
-        newEmotion: thoughtData.newEmotion || '',
-        newEmotionIntensity: thoughtData.newEmotionIntensity || 0
-      }
-      
-      await saveThoughtRecord(record)
-      await loadThoughtRecords()
-      return true
-    } catch (error) {
-      console.error('Failed to save thought record:', error)
-      return false
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  async function loadThoughtRecords(days = 30) {
-    isLoading.value = true
-    try {
-      const endDate = new Date().toISOString()
-      const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
-      
-      thoughtRecords.value = await getThoughtRecords(startDate, endDate)
-    } catch (error) {
-      console.error('Failed to load thought records:', error)
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  return {
-    currentMood,
-    moodHistory,
-    journalEntries,
-    thoughtRecords,
-    isLoading,
-    logMood,
-    loadMoodHistory,
-    saveJournal,
-    loadJournalHistory,
-    saveThought,
-    loadThoughtRecords
-  }
 })

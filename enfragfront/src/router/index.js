@@ -1,24 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import LoginView from '@/views/LoginView.vue'
-import HomeView from '@/views/HomeView.vue'
-import MoodTrackerView from '@/views/MoodTrackerView.vue'
-import JournalView from '@/views/JournalView.vue'
-import CopingStrategiesView from '@/views/CopingStrategiesView.vue'
-import CBTToolsView from '@/views/CBTToolsView.vue'
-import EmergencyView from '@/views/EmergencyView.vue'
-import AnalyticsView from '@/views/AnalyticsView.vue'
-import SettingsView from '@/views/SettingsView.vue'
+import { useAuthStore } from '../stores/auth.js'
+import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/login',
-      name: 'login',
-      component: LoginView,
-      meta: { requiresAuth: false }
-    },
     {
       path: '/',
       name: 'home',
@@ -28,55 +14,54 @@ const router = createRouter({
     {
       path: '/mood',
       name: 'mood',
-      component: MoodTrackerView,
+      component: () => import('../views/MoodTrackerView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/journal',
       name: 'journal',
-      component: JournalView,
+      component: () => import('../views/JournalView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/coping',
       name: 'coping',
-      component: CopingStrategiesView,
+      component: () => import('../views/CopingStrategiesView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/cbt',
       name: 'cbt',
-      component: CBTToolsView,
+      component: () => import('../views/CBTToolsView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/emergency',
       name: 'emergency',
-      component: EmergencyView,
+      component: () => import('../views/EmergencyView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/analytics',
       name: 'analytics',
-      component: AnalyticsView,
+      component: () => import('../views/AnalyticsView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/settings',
       name: 'settings',
-      component: SettingsView,
+      component: () => import('../views/SettingsView.vue'),
       meta: { requiresAuth: true }
     }
   ],
 })
 
-// Navigation guard
+// Navigation guard to check authentication
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
-  
+
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/login')
-  } else if (to.path === '/login' && authStore.isAuthenticated) {
+    // Redirect to home if not authenticated
     next('/')
   } else {
     next()

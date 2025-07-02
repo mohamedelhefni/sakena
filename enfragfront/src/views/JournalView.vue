@@ -1,272 +1,163 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
-    <!-- Header -->
-    <header class="mb-6 pt-4">
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">يومياتي</h1>
-      <p class="text-gray-600 dark:text-gray-300">مساحة آمنة لكتابة مشاعرك وأفكارك</p>
-    </header>
+    <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50" dir="rtl">
+        <div class="max-w-4xl mx-auto p-6">
+            <!-- Header -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">المفكرة الشخصية</h1>
+                <p class="text-gray-600">مكان آمن للتعبير عن مشاعرك وأفكارك</p>
+            </div>
 
-    <!-- Daily Prompts -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
-      <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">موضوع اليوم</h2>
-      <div class="bg-primary-50 dark:bg-primary-900/30 rounded-lg p-4 mb-4">
-        <p class="text-primary-800 dark:text-primary-200">{{ currentPrompt }}</p>
-      </div>
-      <button
-        @click="getNewPrompt"
-        class="text-primary-600 hover:text-primary-700 text-sm font-medium"
-      >
-        موضوع آخر ←
-      </button>
+            <!-- New Entry Form -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">كتابة جديدة</h2>
+
+                <form @submit.prevent="saveJournalEntry" class="space-y-4">
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+                            العنوان (اختياري)
+                        </label>
+                        <input id="title" v-model="newEntry.title" type="text"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="عنوان لمدخل المفكرة..." />
+                    </div>
+
+                    <div>
+                        <label for="content" class="block text-sm font-medium text-gray-700 mb-2">
+                            المحتوى
+                        </label>
+                        <textarea id="content" v-model="newEntry.content" rows="8"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            placeholder="اكتب مشاعرك وأفكارك هنا... هذا مكان آمن للتعبير عن نفسك" required></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                            المشاعر (اختياري)
+                        </label>
+                        <div class="grid grid-cols-3 md:grid-cols-6 gap-2">
+                            <button v-for="emotion in emotionOptions" :key="emotion" type="button"
+                                @click="toggleEmotion(emotion)" class="p-2 rounded-lg border text-sm transition-all"
+                                :class="newEntry.emotions.includes(emotion) ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 hover:border-blue-300'">
+                                {{ emotion }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" :disabled="!newEntry.content.trim()"
+                        class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+                        حفظ في المفكرة
+                    </button>
+                </form>
+            </div>
+
+            <!-- Journal Entries -->
+            <div v-if="journalEntries.length > 0" class="space-y-6">
+                <div v-for="entry in journalEntries" :key="entry.id" class="bg-white rounded-2xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 v-if="entry.title" class="text-lg font-semibold text-gray-800">{{ entry.title }}</h3>
+                            <p class="text-sm text-gray-500">{{ formatDate(entry.date) }}</p>
+                        </div>
+                        <button @click="deleteJournalEntry(entry.id)" class="text-red-600 hover:text-red-700 p-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="prose prose-sm max-w-none mb-4">
+                        <p class="text-gray-700 whitespace-pre-wrap">{{ entry.content }}</p>
+                    </div>
+
+                    <div v-if="entry.emotions && entry.emotions.length > 0" class="flex flex-wrap gap-2">
+                        <span v-for="emotion in entry.emotions" :key="emotion"
+                            class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                            {{ emotion }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else class="bg-white rounded-2xl shadow-lg p-12 text-center">
+                <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                    </path>
+                </svg>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">ابدأ بكتابة أول مدخل</h3>
+                <p class="text-gray-600">المفكرة الشخصية مكان آمن للتعبير عن مشاعرك وأفكارك</p>
+            </div>
+        </div>
     </div>
-
-    <!-- Writing Area -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
-      <form @submit.prevent="saveEntry" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            اكتب هنا...
-          </label>
-          <textarea
-            v-model="currentEntry"
-            rows="10"
-            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
-            placeholder="اكتب مشاعرك وأفكارك هنا... كل ما تكتبه محمي ومشفر"
-          ></textarea>
-        </div>
-
-        <!-- Word Count -->
-        <div class="flex items-center justify-between">
-          <span class="text-sm text-gray-500">عدد الكلمات: {{ wordCount }}</span>
-          <div class="flex items-center space-x-2 space-x-reverse">
-            <button
-              type="button"
-              @click="clearEntry"
-              class="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm"
-            >
-              مسح
-            </button>
-            <button
-              type="submit"
-              :disabled="!currentEntry.trim() || moodStore.isLoading"
-              class="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <span v-if="moodStore.isLoading">جاري الحفظ...</span>
-              <span v-else>حفظ</span>
-            </button>
-          </div>
-        </div>
-      </form>
-    </div>
-
-    <!-- Previous Entries -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-gray-800 dark:text-white">الكتابات السابقة</h2>
-        <div class="flex items-center space-x-2 space-x-reverse">
-          <button
-            @click="viewMode = 'grid'"
-            class="p-2 rounded"
-            :class="viewMode === 'grid' ? 'bg-primary-100 dark:bg-primary-900 text-primary-600' : 'text-gray-600 dark:text-gray-400'"
-          >
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-            </svg>
-          </button>
-          <button
-            @click="viewMode = 'list'"
-            class="p-2 rounded"
-            :class="viewMode === 'list' ? 'bg-primary-100 dark:bg-primary-900 text-primary-600' : 'text-gray-600 dark:text-gray-400'"
-          >
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div v-if="moodStore.journalEntries.length === 0" class="text-center py-8">
-        <svg class="mx-auto w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-        </svg>
-        <p class="text-gray-500 dark:text-gray-400">لا توجد كتابات بعد</p>
-        <p class="text-sm text-gray-400 dark:text-gray-500">ابدأ بكتابة أول مشاعرك أعلاه</p>
-      </div>
-
-      <!-- Grid View -->
-      <div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div
-          v-for="entry in sortedEntries"
-          :key="entry.id"
-          class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-          @click="selectedEntry = entry"
-        >
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-medium text-gray-800 dark:text-white">
-              {{ formatDate(entry.date) }}
-            </span>
-            <span class="text-xs text-gray-500">{{ entry.wordCount }} كلمة</span>
-          </div>
-          <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
-            {{ entry.content.substring(0, 150) }}{{ entry.content.length > 150 ? '...' : '' }}
-          </p>
-          <p v-if="entry.prompt" class="text-xs text-primary-600 dark:text-primary-400 mt-2">
-            الموضوع: {{ entry.prompt.substring(0, 50) }}...
-          </p>
-        </div>
-      </div>
-
-      <!-- List View -->
-      <div v-else class="space-y-3">
-        <div
-          v-for="entry in sortedEntries"
-          :key="entry.id"
-          class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-          @click="selectedEntry = entry"
-        >
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-medium text-gray-800 dark:text-white">
-              {{ formatDate(entry.date) }}
-            </span>
-            <span class="text-xs text-gray-500">{{ entry.wordCount }} كلمة</span>
-          </div>
-          <p class="text-sm text-gray-600 dark:text-gray-300">
-            {{ entry.content.substring(0, 200) }}{{ entry.content.length > 200 ? '...' : '' }}
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Entry Modal -->
-    <div
-      v-if="selectedEntry"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-      @click="selectedEntry = null"
-    >
-      <div
-        class="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
-        @click.stop
-      >
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
-              {{ formatDate(selectedEntry.date) }}
-            </h3>
-            <button
-              @click="selectedEntry = null"
-              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-            >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
-          </div>
-          
-          <div v-if="selectedEntry.prompt" class="bg-primary-50 dark:bg-primary-900/30 rounded-lg p-3 mb-4">
-            <p class="text-sm text-primary-800 dark:text-primary-200">
-              الموضوع: {{ selectedEntry.prompt }}
-            </p>
-          </div>
-          
-          <div class="prose dark:prose-invert max-w-none">
-            <p class="whitespace-pre-wrap text-gray-700 dark:text-gray-300">{{ selectedEntry.content }}</p>
-          </div>
-          
-          <div class="mt-4 text-xs text-gray-500">
-            عدد الكلمات: {{ selectedEntry.wordCount }}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useMoodStore } from '@/stores/mood'
+import { ref, reactive, onMounted } from 'vue'
+import database from '../utils/database.js'
 
-const moodStore = useMoodStore()
+const journalEntries = ref([])
 
-const currentEntry = ref('')
-const currentPrompt = ref('')
-const selectedEntry = ref(null)
-const viewMode = ref('grid')
+const newEntry = reactive({
+    title: '',
+    content: '',
+    emotions: []
+})
 
-const journalPrompts = [
-  'ما الشيء الذي أشعر بالامتنان له اليوم؟',
-  'صف موقفاً جعلك تشعر بالفخر مؤخراً',
-  'ما هي أكبر تحدياتك الحالية وكيف تتعامل معها؟',
-  'اكتب عن شخص يعني لك الكثير ولماذا',
-  'ما هي أحلامك وأهدافك للمستقبل؟',
-  'صف يوماً مثالياً في حياتك',
-  'ما الذي تعلمته عن نفسك مؤخراً؟',
-  'اكتب رسالة لنفسك في الماضي',
-  'ما هي نقاط قوتك وكيف تستخدمها؟',
-  'صف مكاناً يجعلك تشعر بالسلام والراحة',
-  'ما هي العادات الإيجابية التي تريد تطويرها؟',
-  'اكتب عن تجربة صعبة وما تعلمته منها',
-  'ما الذي يجعلك تشعر بالسعادة حقاً؟',
-  'صف العلاقات المهمة في حياتك',
-  'ما هي أكبر مخاوفك وكيف تواجهها؟'
+const emotionOptions = [
+    'سعيد', 'حزين', 'قلق', 'متوتر', 'غاضب', 'محبط',
+    'متفائل', 'يائس', 'متحمس', 'خائف', 'ممتن', 'وحيد'
 ]
 
-const wordCount = computed(() => {
-  return currentEntry.value.trim().split(/\s+/).filter(word => word.length > 0).length
-})
-
-const sortedEntries = computed(() => {
-  return moodStore.journalEntries
-    .slice()
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-})
-
-function getNewPrompt() {
-  const randomIndex = Math.floor(Math.random() * journalPrompts.length)
-  currentPrompt.value = journalPrompts[randomIndex]
+const toggleEmotion = (emotion) => {
+    const index = newEntry.emotions.indexOf(emotion)
+    if (index > -1) {
+        newEntry.emotions.splice(index, 1)
+    } else {
+        newEntry.emotions.push(emotion)
+    }
 }
 
-function clearEntry() {
-  currentEntry.value = ''
+const saveJournalEntry = async () => {
+    const entry = {
+        id: Date.now(),
+        title: newEntry.title || null,
+        content: newEntry.content,
+        emotions: [...newEntry.emotions],
+        date: new Date().toISOString()
+    }
+
+    journalEntries.value.unshift(entry)
+    await database.saveData('journalEntries', journalEntries.value)
+
+    // Reset form
+    newEntry.title = ''
+    newEntry.content = ''
+    newEntry.emotions = []
 }
 
-async function saveEntry() {
-  if (!currentEntry.value.trim()) return
-  
-  const success = await moodStore.saveJournal(currentEntry.value, currentPrompt.value)
-  if (success) {
-    currentEntry.value = ''
-    getNewPrompt()
-  }
+const deleteJournalEntry = async (id) => {
+    if (confirm('هل أنت متأكد من حذف هذا المدخل؟')) {
+        journalEntries.value = journalEntries.value.filter(entry => entry.id !== id)
+        await database.saveData('journalEntries', journalEntries.value)
+    }
 }
 
-function formatDate(dateString) {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffInDays = Math.floor((now - date) / (1000 * 60 * 60 * 24))
-  
-  if (diffInDays === 0) return 'اليوم'
-  if (diffInDays === 1) return 'أمس'
-  if (diffInDays < 7) return `منذ ${diffInDays} أيام`
-  
-  return date.toLocaleDateString('ar-SA', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
+const loadJournalEntries = async () => {
+    const data = database.getData('journalEntries')
+    journalEntries.value = data || []
 }
 
-onMounted(() => {
-  getNewPrompt()
-  moodStore.loadJournalHistory()
-})
+const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('ar-SA', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    })
+}
+
+onMounted(loadJournalEntries)
 </script>
-
-<style scoped>
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-</style>

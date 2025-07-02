@@ -1,65 +1,169 @@
 <template>
-  <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50">
-    <div class="flex justify-around items-center py-2">
-      <RouterLink
-        to="/"
-        class="flex flex-col items-center p-2 text-xs"
-        :class="$route.name === 'home' ? 'text-primary-600' : 'text-gray-600 dark:text-gray-400'"
-      >
-        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
-        </svg>
-        الرئيسية
-      </RouterLink>
+    <nav class="bg-white shadow-lg border-b" dir="rtl">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-800">صحتي النفسية</h1>
+                </div>
 
-      <RouterLink
-        to="/mood"
-        class="flex flex-col items-center p-2 text-xs"
-        :class="$route.name === 'mood' ? 'text-primary-600' : 'text-gray-600 dark:text-gray-400'"
-      >
-        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-.464 5.535a1 1 0 10-1.415-1.414 3 3 0 01-4.242 0 1 1 0 00-1.415 1.414 5 5 0 007.072 0z" clip-rule="evenodd"/>
-        </svg>
-        المزاج
-      </RouterLink>
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-6 space-x-reverse">
+                    <router-link v-for="item in navigation" :key="item.name" :to="item.to"
+                        class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                        :class="{ 'text-blue-600 bg-blue-50': $route.path === item.to }">
+                        <div class="flex items-center space-x-2 space-x-reverse">
+                            <component :is="item.icon" class="w-5 h-5" />
+                            <span>{{ item.name }}</span>
+                        </div>
+                    </router-link>
+                </div>
 
-      <RouterLink
-        to="/journal"
-        class="flex flex-col items-center p-2 text-xs"
-        :class="$route.name === 'journal' ? 'text-primary-600' : 'text-gray-600 dark:text-gray-400'"
-      >
-        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-          <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 3a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
-        </svg>
-        يومياتي
-      </RouterLink>
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-600 hover:text-blue-600 p-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
 
-      <RouterLink
-        to="/coping"
-        class="flex flex-col items-center p-2 text-xs"
-        :class="$route.name === 'coping' ? 'text-primary-600' : 'text-gray-600 dark:text-gray-400'"
-      >
-        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-        </svg>
-        التأقلم
-      </RouterLink>
+                <!-- Logout Button -->
+                <button @click="logout"
+                    class="hidden md:flex items-center space-x-2 space-x-reverse text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                        </path>
+                    </svg>
+                    <span>خروج</span>
+                </button>
+            </div>
 
-      <RouterLink
-        to="/emergency"
-        class="flex flex-col items-center p-2 text-xs"
-        :class="$route.name === 'emergency' ? 'text-red-600' : 'text-gray-600 dark:text-gray-400'"
-      >
-        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-        </svg>
-        طوارئ
-      </RouterLink>
-    </div>
-  </nav>
+            <!-- Mobile Navigation -->
+            <div v-if="mobileMenuOpen" class="md:hidden py-4 border-t">
+                <div class="space-y-2">
+                    <router-link v-for="item in navigation" :key="item.name" :to="item.to"
+                        @click="mobileMenuOpen = false"
+                        class="flex items-center space-x-3 space-x-reverse text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                        :class="{ 'text-blue-600 bg-blue-50': $route.path === item.to }">
+                        <component :is="item.icon" class="w-5 h-5" />
+                        <span>{{ item.name }}</span>
+                    </router-link>
+
+                    <button @click="logout"
+                        class="flex items-center space-x-3 space-x-reverse text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium transition-colors w-full text-right">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                            </path>
+                        </svg>
+                        <span>خروج</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
 </template>
 
 <script setup>
-import { RouterLink } from 'vue-router'
+import { ref } from 'vue'
+import { useAuthStore } from '../stores/auth.js'
+
+const authStore = useAuthStore()
+const mobileMenuOpen = ref(false)
+
+const navigation = [
+    {
+        name: 'الرئيسية',
+        to: '/',
+        icon: 'HomeIcon'
+    },
+    {
+        name: 'تتبع المزاج',
+        to: '/mood',
+        icon: 'MoodIcon'
+    },
+    {
+        name: 'المفكرة',
+        to: '/journal',
+        icon: 'JournalIcon'
+    },
+    {
+        name: 'استراتيجيات التكيف',
+        to: '/coping',
+        icon: 'CopingIcon'
+    },
+    {
+        name: 'الطوارئ',
+        to: '/emergency',
+        icon: 'EmergencyIcon'
+    }
+]
+
+const logout = () => {
+    authStore.logout()
+    mobileMenuOpen.value = false
+}
+</script>
+
+<script>
+// Icon components
+const HomeIcon = {
+    template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+    </svg>
+  `
+}
+
+const MoodIcon = {
+    template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+  `
+}
+
+const JournalIcon = {
+    template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+    </svg>
+  `
+}
+
+const CopingIcon = {
+    template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+    </svg>
+  `
+}
+
+const EmergencyIcon = {
+    template: `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+    </svg>
+  `
+}
+
+export default {
+    components: {
+        HomeIcon,
+        MoodIcon,
+        JournalIcon,
+        CopingIcon,
+        EmergencyIcon
+    }
+}
 </script>

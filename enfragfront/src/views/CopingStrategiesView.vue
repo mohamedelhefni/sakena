@@ -1,511 +1,268 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
-    <!-- Header -->
-    <header class="mb-6 pt-4">
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">استراتيجيات التأقلم</h1>
-      <p class="text-gray-600 dark:text-gray-300">تمارين وتقنيات لإدارة التوتر والقلق</p>
-    </header>
+    <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50" dir="rtl">
+        <div class="max-w-4xl mx-auto p-6">
+            <!-- Header -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">استراتيجيات التكيف</h1>
+                <p class="text-gray-600">تقنيات وأساليب لمساعدتك في التعامل مع القلق والاكتئاب</p>
+            </div>
 
-    <!-- Quick Access -->
-    <div class="grid grid-cols-2 gap-4 mb-6">
-      <button
-        @click="startBreathingExercise"
-        class="bg-blue-500 text-white p-6 rounded-2xl shadow-lg hover:bg-blue-600 transition-colors"
-      >
-        <div class="text-center">
-          <div class="text-3xl mb-2">🫁</div>
-          <h3 class="font-semibold mb-1">تمرين التنفس</h3>
-          <p class="text-sm opacity-90">هدئ نفسك بالتنفس</p>
-        </div>
-      </button>
+            <!-- Quick Access Strategies -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">استراتيجيات سريعة</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div v-for="strategy in quickStrategies" :key="strategy.id"
+                        class="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all cursor-pointer"
+                        @click="selectStrategy(strategy)">
+                        <h3 class="font-semibold text-gray-800 mb-2">{{ strategy.title }}</h3>
+                        <p class="text-sm text-gray-600">{{ strategy.description }}</p>
+                        <div class="mt-3 flex items-center justify-between">
+                            <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
+                                {{ getCategoryName(strategy.category) }}
+                            </span>
+                            <div class="flex items-center space-x-1 space-x-reverse">
+                                <span class="text-xs text-gray-500">الفعالية:</span>
+                                <div class="flex">
+                                    <span v-for="i in 5" :key="i" class="w-3 h-3 rounded-full mr-1"
+                                        :class="i <= strategy.effectiveness ? 'bg-yellow-400' : 'bg-gray-200'"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-      <button
-        @click="startGroundingExercise"
-        class="bg-green-500 text-white p-6 rounded-2xl shadow-lg hover:bg-green-600 transition-colors"
-      >
-        <div class="text-center">
-          <div class="text-3xl mb-2">🌱</div>
-          <h3 class="font-semibold mb-1">تقنية التأريض</h3>
-          <p class="text-sm opacity-90">5-4-3-2-1</p>
+            <!-- Breathing Exercise -->
+            <div v-if="showBreathingExercise" class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <div class="text-center">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">تمرين التنفس العميق</h2>
+                    <div class="relative w-32 h-32 mx-auto mb-6">
+                        <div class="w-32 h-32 rounded-full border-4 border-blue-500 flex items-center justify-center transition-all duration-1000"
+                            :class="breathingPhase === 'in' ? 'scale-110 bg-blue-100' : breathingPhase === 'hold' ? 'scale-110 bg-blue-200' : 'scale-90 bg-blue-50'">
+                            <span class="text-2xl font-bold text-blue-600">{{ breathingCount }}</span>
+                        </div>
+                    </div>
+                    <p class="text-lg font-medium mb-4">
+                        {{ breathingText }}
+                    </p>
+                    <div class="space-x-4 space-x-reverse">
+                        <button @click="startBreathingExercise" :disabled="breathingActive"
+                            class="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-lg">
+                            {{ breathingActive ? 'جاري التمرين...' : 'بدء التمرين' }}
+                        </button>
+                        <button @click="stopBreathingExercise"
+                            class="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg">
+                            إيقاف
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add New Strategy -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">إضافة استراتيجية جديدة</h2>
+
+                <form @submit.prevent="addStrategy" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+                                العنوان
+                            </label>
+                            <input id="title" v-model="newStrategy.title" type="text"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="عنوان الاستراتيجية" required />
+                        </div>
+
+                        <div>
+                            <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
+                                الفئة
+                            </label>
+                            <select id="category" v-model="newStrategy.category"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                required>
+                                <option value="">اختر الفئة</option>
+                                <option value="relaxation">استرخاء</option>
+                                <option value="physical">نشاط بدني</option>
+                                <option value="emotional">تنظيم عاطفي</option>
+                                <option value="social">تواصل اجتماعي</option>
+                                <option value="cognitive">معرفي</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                            الوصف
+                        </label>
+                        <textarea id="description" v-model="newStrategy.description" rows="3"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="وصف تفصيلي للاستراتيجية وكيفية تطبيقها" required></textarea>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+                        إضافة الاستراتيجية
+                    </button>
+                </form>
+            </div>
+
+            <!-- Personal Strategies -->
+            <div v-if="personalStrategies.length > 0" class="bg-white rounded-2xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">استراتيجياتي الشخصية</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div v-for="strategy in personalStrategies" :key="strategy.id"
+                        class="p-4 border border-gray-200 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-semibold text-gray-800">{{ strategy.title }}</h3>
+                            <button @click="removeStrategy(strategy.id)" class="text-red-600 hover:text-red-700">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">{{ strategy.description }}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
+                                {{ getCategoryName(strategy.category) }}
+                            </span>
+                            <div class="flex items-center space-x-1 space-x-reverse">
+                                <span class="text-xs text-gray-500">الفعالية:</span>
+                                <div class="flex">
+                                    <button v-for="i in 5" :key="i" @click="updateEffectiveness(strategy.id, i)"
+                                        class="w-3 h-3 rounded-full mr-1 cursor-pointer"
+                                        :class="i <= (strategy.effectiveness || 3) ? 'bg-yellow-400' : 'bg-gray-200'"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </button>
     </div>
-
-    <!-- Breathing Exercise Modal -->
-    <div
-      v-if="showBreathingModal"
-      class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50"
-    >
-      <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-8 text-center">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">تمرين التنفس العميق</h2>
-        
-        <!-- Breathing Circle -->
-        <div class="relative mx-auto mb-8" style="width: 200px; height: 200px;">
-          <div
-            class="absolute inset-0 rounded-full border-4 border-blue-200 flex items-center justify-center"
-            :class="breathingPhase === 'inhale' ? 'animate-breathe bg-blue-100' : 'bg-blue-50'"
-          >
-            <div class="text-center">
-              <div class="text-6xl text-blue-500 mb-2">
-                {{ breathingPhase === 'inhale' ? '↑' : '↓' }}
-              </div>
-              <p class="text-lg font-semibold text-gray-700">
-                {{ breathingPhase === 'inhale' ? 'شهيق' : 'زفير' }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Instructions -->
-        <div class="mb-6">
-          <p class="text-lg text-gray-700 dark:text-gray-300 mb-2">
-            {{ breathingInstructions }}
-          </p>
-          <div class="text-3xl font-bold text-blue-600">{{ breathingCounter }}</div>
-        </div>
-
-        <!-- Controls -->
-        <div class="flex justify-center space-x-4 space-x-reverse">
-          <button
-            v-if="!breathingActive"
-            @click="startBreathing"
-            class="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
-          >
-            ابدأ التمرين
-          </button>
-          <button
-            v-else
-            @click="stopBreathing"
-            class="px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700"
-          >
-            إيقاف
-          </button>
-          <button
-            @click="closeBreathingModal"
-            class="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700"
-          >
-            إغلاق
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Grounding Exercise Modal -->
-    <div
-      v-if="showGroundingModal"
-      class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50"
-    >
-      <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-8">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6 text-center">تقنية التأريض 5-4-3-2-1</h2>
-        
-        <div class="space-y-6">
-          <div v-for="(step, index) in groundingSteps" :key="index" class="p-4 rounded-lg"
-               :class="groundingCurrentStep === index ? 'bg-green-100 dark:bg-green-900 border-2 border-green-500' : 'bg-gray-50 dark:bg-gray-700'">
-            <div class="flex items-center mb-3">
-              <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
-                   :class="groundingCurrentStep === index ? 'bg-green-500' : 'bg-gray-400'">
-                {{ step.number }}
-              </div>
-              <h3 class="mr-3 font-semibold text-gray-800 dark:text-white">{{ step.title }}</h3>
-            </div>
-            <p class="text-gray-600 dark:text-gray-300 mb-3">{{ step.instruction }}</p>
-            
-            <div v-if="groundingCurrentStep === index" class="space-y-2">
-              <div v-for="(item, itemIndex) in step.items" :key="itemIndex" class="flex items-center">
-                <input
-                  type="checkbox"
-                  :id="`step-${index}-${itemIndex}`"
-                  v-model="item.completed"
-                  class="mr-2 h-4 w-4 text-green-600 rounded"
-                >
-                <label :for="`step-${index}-${itemIndex}`" class="text-sm text-gray-700 dark:text-gray-300">
-                  {{ item.text }}
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex justify-center space-x-4 space-x-reverse mt-6">
-          <button
-            @click="nextGroundingStep"
-            :disabled="!canProceedGrounding"
-            class="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {{ groundingCurrentStep < groundingSteps.length - 1 ? 'التالي' : 'إنهاء' }}
-          </button>
-          <button
-            @click="closeGroundingModal"
-            class="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700"
-          >
-            إغلاق
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Coping Strategies Grid -->
-    <div class="space-y-6">
-      <!-- Breathing Exercises -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-        <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">تمارين التنفس</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div
-            v-for="exercise in breathingExercises"
-            :key="exercise.id"
-            @click="selectBreathingType(exercise.type)"
-            class="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-blue-300 dark:hover:border-blue-500 transition-colors"
-          >
-            <h3 class="font-semibold text-gray-800 dark:text-white mb-2">{{ exercise.name }}</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">{{ exercise.description }}</p>
-            <p class="text-xs text-blue-600 dark:text-blue-400">{{ exercise.duration }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Mindfulness & Meditation -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-        <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">التأمل واليقظة الذهنية</h2>
-        <div class="space-y-4">
-          <div
-            v-for="meditation in meditations"
-            :key="meditation.id"
-            @click="startMeditation(meditation)"
-            class="flex items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-          >
-            <div class="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg ml-4">
-              <span class="text-2xl">{{ meditation.icon }}</span>
-            </div>
-            <div class="flex-1">
-              <h3 class="font-semibold text-gray-800 dark:text-white">{{ meditation.name }}</h3>
-              <p class="text-sm text-gray-600 dark:text-gray-300">{{ meditation.description }}</p>
-              <p class="text-xs text-purple-600 dark:text-purple-400">{{ meditation.duration }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Relief Techniques -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-        <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">تقنيات الإغاثة السريعة</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div
-            v-for="technique in quickTechniques"
-            :key="technique.id"
-            @click="useTechnique(technique)"
-            class="p-4 text-center border-2 border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-green-300 dark:hover:border-green-500 transition-colors"
-          >
-            <div class="text-3xl mb-2">{{ technique.icon }}</div>
-            <h3 class="font-semibold text-gray-800 dark:text-white mb-1">{{ technique.name }}</h3>
-            <p class="text-xs text-gray-600 dark:text-gray-300">{{ technique.description }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
+import { useEmergencyStore } from '../stores/emergency.js'
 
-// Breathing exercise state
-const showBreathingModal = ref(false)
+const emergencyStore = useEmergencyStore()
+
+const showBreathingExercise = ref(false)
 const breathingActive = ref(false)
-const breathingPhase = ref('inhale')
-const breathingCounter = ref(4)
-const breathingType = ref('box')
-const breathingTimer = ref(null)
+const breathingPhase = ref('ready') // 'in', 'hold', 'out'
+const breathingCount = ref(4)
+const breathingText = ref('اضغط لبدء التمرين')
 
-// Grounding exercise state
-const showGroundingModal = ref(false)
-const groundingCurrentStep = ref(0)
-
-const breathingExercises = [
-  {
-    id: 1,
-    name: 'تنفس الصندوق',
-    type: 'box',
-    description: 'شهيق 4 ثوان، حبس 4 ثوان، زفير 4 ثوان، حبس 4 ثوان',
-    duration: '5-10 دقائق'
-  },
-  {
-    id: 2,
-    name: 'تنفس 4-7-8',
-    type: '4-7-8',
-    description: 'شهيق 4 ثوان، حبس 7 ثوان، زفير 8 ثوان',
-    duration: '3-5 دقائق'
-  },
-  {
-    id: 3,
-    name: 'التنفس العميق',
-    type: 'deep',
-    description: 'تنفس عميق وبطيء من البطن',
-    duration: '5-15 دقيقة'
-  }
-]
-
-const meditations = [
-  {
-    id: 1,
-    name: 'تأمل اليقظة الذهنية',
-    description: 'ركز على اللحظة الحالية والتنفس',
-    duration: '10 دقائق',
-    icon: '🧘',
-    instructions: 'اجلس بشكل مريح، أغمض عينيك، وركز على تنفسك الطبيعي...'
-  },
-  {
-    id: 2,
-    name: 'تأمل الجسم',
-    description: 'مسح تدريجي لجميع أجزاء الجسم',
-    duration: '15 دقيقة',
-    icon: '🌸',
-    instructions: 'ابدأ من أطراف أصابع قدميك وتحرك تدريجياً إلى أعلى...'
-  },
-  {
-    id: 3,
-    name: 'تأمل الامتنان',
-    description: 'تركيز على الأشياء الإيجابية في حياتك',
-    duration: '8 دقائق',
-    icon: '🙏',
-    instructions: 'فكر في ثلاثة أشياء تشعر بالامتنان لها اليوم...'
-  }
-]
-
-const quickTechniques = [
-  {
-    id: 1,
-    name: 'الماء البارد',
-    description: 'اغسل وجهك بماء بارد',
-    icon: '💧'
-  },
-  {
-    id: 2,
-    name: 'العد التنازلي',
-    description: 'عد من 100 إلى 1',
-    icon: '🔢'
-  },
-  {
-    id: 3,
-    name: 'الضغط والإفلات',
-    description: 'شد واسترخي عضلاتك',
-    icon: '💪'
-  },
-  {
-    id: 4,
-    name: 'الموسيقى الهادئة',
-    description: 'استمع لموسيقى مريحة',
-    icon: '🎵'
-  },
-  {
-    id: 5,
-    name: 'النظر للخارج',
-    description: 'انظر خارج النافذة',
-    icon: '🪟'
-  },
-  {
-    id: 6,
-    name: 'شرب الشاي',
-    description: 'اشرب مشروباً دافئاً',
-    icon: '🍵'
-  }
-]
-
-const groundingSteps = ref([
-  {
-    number: 5,
-    title: 'انظر إلى 5 أشياء',
-    instruction: 'حدد 5 أشياء يمكنك رؤيتها من حولك',
-    items: [
-      { text: 'شيء أمامك مباشرة', completed: false },
-      { text: 'شيء إلى يمينك', completed: false },
-      { text: 'شيء إلى يسارك', completed: false },
-      { text: 'شيء فوقك', completed: false },
-      { text: 'شيء تحتك', completed: false }
-    ]
-  },
-  {
-    number: 4,
-    title: 'المس 4 أشياء',
-    instruction: 'المس 4 أشياء مختلفة وركز على ملمسها',
-    items: [
-      { text: 'شيء ناعم', completed: false },
-      { text: 'شيء خشن', completed: false },
-      { text: 'شيء بارد', completed: false },
-      { text: 'شيء دافئ', completed: false }
-    ]
-  },
-  {
-    number: 3,
-    title: 'استمع إلى 3 أصوات',
-    instruction: 'ركز على 3 أصوات مختلفة حولك',
-    items: [
-      { text: 'صوت قريب منك', completed: false },
-      { text: 'صوت بعيد', completed: false },
-      { text: 'صوت في الخلفية', completed: false }
-    ]
-  },
-  {
-    number: 2,
-    title: 'شم رائحتين',
-    instruction: 'حاول تمييز رائحتين مختلفتين',
-    items: [
-      { text: 'رائحة في الهواء', completed: false },
-      { text: 'رائحة أخرى حولك', completed: false }
-    ]
-  },
-  {
-    number: 1,
-    title: 'تذوق شيئاً واحداً',
-    instruction: 'ركز على طعم في فمك أو تناول شيئاً صغيراً',
-    items: [
-      { text: 'طعم في فمك الآن', completed: false }
-    ]
-  }
-])
-
-const breathingInstructions = computed(() => {
-  switch (breathingType.value) {
-    case 'box':
-      return breathingPhase.value === 'inhale' ? 'تنفس ببطء من أنفك' : 'أخرج الهواء ببطء من فمك'
-    case '4-7-8':
-      return breathingPhase.value === 'inhale' ? 'شهيق من الأنف' : 'زفير من الفم'
-    case 'deep':
-      return breathingPhase.value === 'inhale' ? 'تنفس عميق من البطن' : 'زفير بطيء ومريح'
-    default:
-      return 'تنفس بشكل طبيعي'
-  }
+const newStrategy = reactive({
+    title: '',
+    description: '',
+    category: '',
+    effectiveness: 3
 })
 
-const canProceedGrounding = computed(() => {
-  if (groundingCurrentStep.value >= groundingSteps.value.length) return true
-  const currentItems = groundingSteps.value[groundingCurrentStep.value].items
-  return currentItems.every(item => item.completed)
-})
+const quickStrategies = computed(() => emergencyStore.getDefaultCopingStrategies())
+const personalStrategies = computed(() => emergencyStore.copingStrategies)
 
-function startBreathingExercise() {
-  showBreathingModal.value = true
-  breathingType.value = 'box'
-}
-
-function selectBreathingType(type) {
-  breathingType.value = type
-  startBreathingExercise()
-}
-
-function startBreathing() {
-  breathingActive.value = true
-  breathingPhase.value = 'inhale'
-  breathingCounter.value = 4
-  runBreathingCycle()
-}
-
-function runBreathingCycle() {
-  if (!breathingActive.value) return
-  
-  const intervals = {
-    'box': [4, 4, 4, 4], // inhale, hold, exhale, hold
-    '4-7-8': [4, 7, 8, 0],
-    'deep': [6, 0, 8, 0]
-  }
-  
-  const [inhale, hold1, exhale, hold2] = intervals[breathingType.value]
-  
-  // Inhale phase
-  breathingPhase.value = 'inhale'
-  breathingCounter.value = inhale
-  
-  const countdown = setInterval(() => {
-    breathingCounter.value--
-    if (breathingCounter.value <= 0) {
-      clearInterval(countdown)
-      
-      // Hold phase 1 (if applicable)
-      if (hold1 > 0) {
-        setTimeout(() => {
-          // Exhale phase
-          breathingPhase.value = 'exhale'
-          breathingCounter.value = exhale
-          
-          const exhaleCountdown = setInterval(() => {
-            breathingCounter.value--
-            if (breathingCounter.value <= 0) {
-              clearInterval(exhaleCountdown)
-              
-              // Hold phase 2 (if applicable)
-              if (hold2 > 0) {
-                setTimeout(() => {
-                  runBreathingCycle()
-                }, hold2 * 1000)
-              } else {
-                setTimeout(() => {
-                  runBreathingCycle()
-                }, 1000)
-              }
-            }
-          }, 1000)
-        }, hold1 * 1000)
-      } else {
-        // Direct to exhale
-        breathingPhase.value = 'exhale'
-        breathingCounter.value = exhale
-        
-        const exhaleCountdown = setInterval(() => {
-          breathingCounter.value--
-          if (breathingCounter.value <= 0) {
-            clearInterval(exhaleCountdown)
-            setTimeout(() => {
-              runBreathingCycle()
-            }, 1000)
-          }
-        }, 1000)
-      }
+const selectStrategy = (strategy) => {
+    if (strategy.title.includes('التنفس')) {
+        showBreathingExercise.value = true
     }
-  }, 1000)
 }
 
-function stopBreathing() {
-  breathingActive.value = false
-  if (breathingTimer.value) {
-    clearInterval(breathingTimer.value)
-  }
+const startBreathingExercise = () => {
+    breathingActive.value = true
+    breathingPhase.value = 'in'
+    breathingCount.value = 4
+    breathingText.value = 'استنشق... 4'
+
+    const breathingCycle = () => {
+        if (!breathingActive.value) return
+
+        if (breathingPhase.value === 'in') {
+            breathingText.value = `استنشق... ${breathingCount.value}`
+            if (breathingCount.value > 1) {
+                breathingCount.value--
+                setTimeout(breathingCycle, 1000)
+            } else {
+                breathingPhase.value = 'hold'
+                breathingCount.value = 4
+                setTimeout(breathingCycle, 1000)
+            }
+        } else if (breathingPhase.value === 'hold') {
+            breathingText.value = `احبس النفس... ${breathingCount.value}`
+            if (breathingCount.value > 1) {
+                breathingCount.value--
+                setTimeout(breathingCycle, 1000)
+            } else {
+                breathingPhase.value = 'out'
+                breathingCount.value = 6
+                setTimeout(breathingCycle, 1000)
+            }
+        } else if (breathingPhase.value === 'out') {
+            breathingText.value = `أخرج النفس... ${breathingCount.value}`
+            if (breathingCount.value > 1) {
+                breathingCount.value--
+                setTimeout(breathingCycle, 1000)
+            } else {
+                breathingPhase.value = 'in'
+                breathingCount.value = 4
+                setTimeout(breathingCycle, 1000)
+            }
+        }
+    }
+
+    breathingCycle()
 }
 
-function closeBreathingModal() {
-  stopBreathing()
-  showBreathingModal.value = false
+const stopBreathingExercise = () => {
+    breathingActive.value = false
+    breathingPhase.value = 'ready'
+    breathingCount.value = 4
+    breathingText.value = 'اضغط لبدء التمرين'
+    showBreathingExercise.value = false
 }
 
-function startGroundingExercise() {
-  showGroundingModal.value = true
-  groundingCurrentStep.value = 0
-  // Reset all completed states
-  groundingSteps.value.forEach(step => {
-    step.items.forEach(item => {
-      item.completed = false
-    })
-  })
+const addStrategy = async () => {
+    await emergencyStore.addCopingStrategy(newStrategy)
+
+    // Reset form
+    newStrategy.title = ''
+    newStrategy.description = ''
+    newStrategy.category = ''
+    newStrategy.effectiveness = 3
 }
 
-function nextGroundingStep() {
-  if (groundingCurrentStep.value < groundingSteps.value.length - 1) {
-    groundingCurrentStep.value++
-  } else {
-    closeGroundingModal()
-  }
+const removeStrategy = async (id) => {
+    if (confirm('هل أنت متأكد من حذف هذه الاستراتيجية؟')) {
+        await emergencyStore.removeCopingStrategy(id)
+    }
 }
 
-function closeGroundingModal() {
-  showGroundingModal.value = false
-  groundingCurrentStep.value = 0
+const updateEffectiveness = async (strategyId, effectiveness) => {
+    const strategy = personalStrategies.value.find(s => s.id === strategyId)
+    if (strategy) {
+        strategy.effectiveness = effectiveness
+        // Save updated strategies
+        await emergencyStore.removeCopingStrategy(strategyId)
+        await emergencyStore.addCopingStrategy(strategy)
+    }
 }
 
-function startMeditation(meditation) {
-  // In a real app, this would start a guided meditation
-  alert(`بدء تأمل: ${meditation.name}\n\n${meditation.instructions}`)
+const getCategoryName = (category) => {
+    const categories = {
+        relaxation: 'استرخاء',
+        physical: 'نشاط بدني',
+        emotional: 'تنظيم عاطفي',
+        social: 'تواصل اجتماعي',
+        cognitive: 'معرفي'
+    }
+    return categories[category] || category
 }
 
-function useTechnique(technique) {
-  // In a real app, this would provide guided instructions
-  alert(`تقنية: ${technique.name}\n\n${technique.description}`)
-}
+onMounted(async () => {
+    await emergencyStore.loadEmergencyData()
+})
 </script>

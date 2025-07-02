@@ -1,102 +1,104 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { saveEmergencyContact, getEmergencyContacts, deleteEmergencyContact } from '@/utils/database'
+import database from '../utils/database.js'
 
-export const useEmergencyStore = defineStore('emergency', () => {
-  const emergencyContacts = ref([])
-  const isLoading = ref(false)
+export const useEmergencyStore = defineStore('emergency', {
+    state: () => ({
+        emergencyContacts: [],
+        copingStrategies: [],
+        safetyPlan: null
+    }),
 
-  // Static hotlines (Arabic countries + international)
-  const staticHotlines = ref([
-    {
-      id: 'egypt',
-      name: 'خط المساعدة النفسية - مصر',
-      number: '16328',
-      country: 'مصر',
-      available: '24/7'
-    },
-    {
-      id: 'saudi',
-      name: 'مركز الدعم النفسي - السعودية',
-      number: '920033360',
-      country: 'السعودية',
-      available: '24/7'
-    },
-    {
-      id: 'uae',
-      name: 'خط الأمان النفسي - الإمارات',
-      number: '800988',
-      country: 'الإمارات',
-      available: '24/7'
-    },
-    {
-      id: 'jordan',
-      name: 'خط المساعدة النفسية - الأردن',
-      number: '110',
-      country: 'الأردن',
-      available: '24/7'
-    },
-    {
-      id: 'lebanon',
-      name: 'الخط الساخن للصحة النفسية - لبنان',
-      number: '1564',
-      country: 'لبنان',
-      available: '24/7'
-    },
-    {
-      id: 'international',
-      name: 'International Suicide Prevention',
-      number: '1-800-273-8255',
-      country: 'International',
-      available: '24/7'
+    actions: {
+        async loadEmergencyData() {
+            try {
+                this.emergencyContacts = database.getData('emergencyContacts') || []
+                this.copingStrategies = database.getData('copingStrategies') || []
+                this.safetyPlan = database.getData('safetyPlan') || null
+            } catch (error) {
+                console.error('Error loading emergency data:', error)
+            }
+        },
+
+        async addEmergencyContact(contact) {
+            const newContact = {
+                id: Date.now(),
+                name: contact.name,
+                phone: contact.phone,
+                relationship: contact.relationship,
+                notes: contact.notes || ''
+            }
+
+            this.emergencyContacts.push(newContact)
+            await database.saveData('emergencyContacts', this.emergencyContacts)
+        },
+
+        async removeEmergencyContact(id) {
+            this.emergencyContacts = this.emergencyContacts.filter(contact => contact.id !== id)
+            await database.saveData('emergencyContacts', this.emergencyContacts)
+        },
+
+        async addCopingStrategy(strategy) {
+            const newStrategy = {
+                id: Date.now(),
+                title: strategy.title,
+                description: strategy.description,
+                category: strategy.category,
+                effectiveness: strategy.effectiveness || 3
+            }
+
+            this.copingStrategies.push(newStrategy)
+            await database.saveData('copingStrategies', this.copingStrategies)
+        },
+
+        async removeCopingStrategy(id) {
+            this.copingStrategies = this.copingStrategies.filter(strategy => strategy.id !== id)
+            await database.saveData('copingStrategies', this.copingStrategies)
+        },
+
+        async updateSafetyPlan(plan) {
+            this.safetyPlan = {
+                warningSignals: plan.warningSignals || [],
+                copingStrategies: plan.copingStrategies || [],
+                distractions: plan.distractions || [],
+                supportContacts: plan.supportContacts || [],
+                environmentSafety: plan.environmentSafety || '',
+                professionalContacts: plan.professionalContacts || []
+            }
+
+            await database.saveData('safetyPlan', this.safetyPlan)
+        },
+
+        getDefaultCopingStrategies() {
+            return [
+                {
+                    id: 1,
+                    title: 'تمارين التنفس العميق',
+                    description: 'خذ نفساً عميقاً لمدة 4 ثوانٍ، احبسه لمدة 4 ثوانٍ، ثم أخرجه لمدة 6 ثوانٍ',
+                    category: 'relaxation',
+                    effectiveness: 4
+                },
+                {
+                    id: 2,
+                    title: 'المشي أو التمارين الخفيفة',
+                    description: 'اذهب في نزهة قصيرة أو قم ببعض التمارين الخفيفة لتحسين مزاجك',
+                    category: 'physical',
+                    effectiveness: 4
+                },
+                {
+                    id: 3,
+                    title: 'الكتابة في المفكرة',
+                    description: 'اكتب مشاعرك وأفكارك للتعبير عنها ومعالجتها',
+                    category: 'emotional',
+                    effectiveness: 3
+                },
+                {
+                    id: 4,
+                    title: 'التواصل مع صديق',
+                    description: 'تحدث مع شخص تثق به حول ما تشعر به',
+                    category: 'social',
+                    effectiveness: 5
+                }
+            ]
+        }
     }
-  ])
-
-  async function addEmergencyContact(contactData) {
-    isLoading.value = true
-    try {
-      await saveEmergencyContact(contactData)
-      await loadEmergencyContacts()
-      return true
-    } catch (error) {
-      console.error('Failed to save emergency contact:', error)
-      return false
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  async function loadEmergencyContacts() {
-    isLoading.value = true
-    try {
-      emergencyContacts.value = await getEmergencyContacts()
-    } catch (error) {
-      console.error('Failed to load emergency contacts:', error)
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  async function removeEmergencyContact(id) {
-    isLoading.value = true
-    try {
-      await deleteEmergencyContact(id)
-      await loadEmergencyContacts()
-      return true
-    } catch (error) {
-      console.error('Failed to delete emergency contact:', error)
-      return false
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  return {
-    emergencyContacts,
-    staticHotlines,
-    isLoading,
-    addEmergencyContact,
-    loadEmergencyContacts,
-    removeEmergencyContact
-  }
 })

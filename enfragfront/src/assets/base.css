@@ -69,6 +69,10 @@ body {
     background-color 0.5s;
   line-height: 1.6;
   font-family:
+    'Noto Sans Arabic',
+    'Tajawal',
+    'Cairo',
+    'Almarai',
     Inter,
     -apple-system,
     BlinkMacSystemFont,
@@ -85,4 +89,37 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Arabic typography improvements */
+html[dir="rtl"] {
+  text-align: right;
+}
+
+/* Improved spacing for Arabic text */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+/* Better button and form styling for Arabic */
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+/* Smooth transitions for all interactive elements */
+button,
+input,
+textarea,
+select,
+a {
+  transition: all 0.2s ease-in-out;
 }
