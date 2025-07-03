@@ -98,7 +98,7 @@ export function MoodTracker({ onSave, onCancel }: MoodTrackerProps) {
                     {/* Mood Selection */}
                     <div className="space-y-3">
                         <Label className="text-base font-medium">{t('mood.howAreYouFeeling')}</Label>
-                        <div className="flex justify-around p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                        <div className="flex justify-around p-2  dark:bg-gray-800 rounded-lg">
                             {moodLevels.map(({ value, label, emoji, color }) => (
                                 <button
                                     key={value}
@@ -120,7 +120,10 @@ export function MoodTracker({ onSave, onCancel }: MoodTrackerProps) {
                                     key={emotion.value}
                                     variant={selectedEmotions.includes(emotion.value) ? 'default' : 'outline'}
                                     onClick={() => toggleEmotion(emotion.value)}
-                                    className="cursor-pointer"
+                                    className={"cursor-pointer select-none"}
+                                    style={{
+                                        backgroundColor: selectedEmotions.includes(emotion.value) ? emotion.color : 'transparent', color: selectedEmotions.includes(emotion.value) ? '#fff' : emotion.color
+                                    }}
                                 >
                                     {t(emotion.label)}
                                 </Badge>
@@ -178,7 +181,7 @@ export function MoodTracker({ onSave, onCancel }: MoodTrackerProps) {
                                 onChange={(e) => setSleep(Number(e.target.value))}
                                 className="w-full"
                             />
-                            <span className="font-semibold">{t('mood.hours', { count: sleep })}</span>
+                            <span className="font-semibold flex">{t('mood.hours', { count: sleep })}</span>
                         </div>
                     </div>
 
@@ -216,7 +219,7 @@ export function MoodTracker({ onSave, onCancel }: MoodTrackerProps) {
                                 <Input
                                     key={index}
                                     type="text"
-                                    placeholder={t('mood.gratitudePlaceholder', { number: index + 1 })}
+                                    placeholder={t('mood.gratitudePlaceholder', { count: index + 1 })}
                                     value={item}
                                     onChange={(e) => updateGratitude(index, e.target.value)}
                                 />

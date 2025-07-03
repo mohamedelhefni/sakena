@@ -33,6 +33,8 @@ type ActiveTab = 'dashboard' | 'mood' | 'journal' | 'insights' | 'settings';
 export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardProps) {
     const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
     const [showMoodTracker, setShowMoodTracker] = useState(false);
+    const [viewMoodEntry, setViewMoodEntry] = useState<MoodEntry | null>(null);
+    const [journalEntries, setJournalEntries] = useState(userData.journalEntries || []);
     const { theme, setTheme } = useTheme();
     const { t, i18n } = useTranslation();
 
@@ -51,6 +53,14 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
         onUpdateData(updatedData);
         setShowMoodTracker(false);
         setActiveTab('dashboard');
+    };
+
+    const handleViewMoodEntry = (entry: MoodEntry) => {
+        setViewMoodEntry(entry);
+    };
+
+    const handleBackFromMoodView = () => {
+        setViewMoodEntry(null);
     };
 
     const sidebarItems = [
@@ -186,55 +196,171 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                 );
 
             case 'mood':
-                return showMoodTracker ? (
-                    <MoodTracker
-                        onSave={handleSaveMoodEntry}
-                        onCancel={() => setShowMoodTracker(false)}
-                    />
-                ) : (
+                if (showMoodTracker) {
+                    return (
+                        <MoodTracker
+                            onSave={handleSaveMoodEntry}
+                            onCancel={() => setShowMoodTracker(false)}
+                        />
+                    );
+                }
+
+                if (viewMoodEntry) {
+                    return (
+                        <Card>
+                            <CardHeader>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle>{t('mood.viewEntry')}</CardTitle>
+                                        <CardDescription>{viewMoodEntry.date}</CardDescription>
+                                    </div>
+                                    <Button variant="outline" onClick={handleBackFromMoodView}>
+                                        {t('common.back')}
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <h4 className="font-medium mb-2">{t('mood.overallMoodLabel')}</h4>
+                                        <div className="flex items-center gap-2">
+                                            <Heart className="w-5 h-5 text-green-500" />
+                                            <span className="text-lg">{t(`mood.levels.${viewMoodEntry.mood}`)}</span>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="font-medium mb-2">{t('mood.emotionsLabel')}</h4>
+                                        <div className="flex flex-wrap gap-1">
+                                            {viewMoodEntry.emotions.map(emotion => (
+                                                <Badge key={emotion} variant="secondary">
+                                                    {t(`emotions.${emotion}`)}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="font-medium mb-2">{t('mood.energyLabel')}</h4>
+                                        <p>{t(`mood.levels.${viewMoodEntry.energy === 1 ? 'very-low' : viewMoodEntry.energy === 2 ? 'low' : viewMoodEntry.energy === 3 ? 'neutral' : viewMoodEntry.energy === 4 ? 'good' : 'excellent'}`)}</p>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="font-medium mb-2">{t('mood.stressLabel')}</h4>
+                                        <p>{t(`mood.levels.${viewMoodEntry.stress === 1 ? 'very-low' : viewMoodEntry.stress === 2 ? 'low' : viewMoodEntry.stress === 3 ? 'neutral' : viewMoodEntry.stress === 4 ? 'high' : 'very-high'}`)}</p>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="font-medium mb-2">{t('mood.sleepLabel')}</h4>
+                                        <p>{t('mood.hours', { count: viewMoodEntry.sleep })}</p>
+                                    </div>
+                                </div>
+
+                                {viewMoodEntry.islamicPractices && (
+                                    <div>
+                                        <h4 className="font-medium mb-2">{t('mood.islamicPracticesLabel')}</h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {Object.entries(viewMoodEntry.islamicPractices).map(([practice, completed]) => (
+                                                completed && (
+                                                    <Badge key={practice} variant="default">
+                                                        {t(`practices.${practice}`)}
+                                                    </Badge>
+                                                )
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {viewMoodEntry.gratitude && viewMoodEntry.gratitude.length > 0 && (
+                                    <div>
+                                        <h4 className="font-medium mb-2">{t('mood.gratitudeLabel')}</h4>
+                                        <ul className="list-disc list-inside space-y-1">
+                                            {viewMoodEntry.gratitude.map((item, index) => (
+                                                <li key={index} className="text-sm">{item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {viewMoodEntry.notes && (
+                                    <div>
+                                        <h4 className="font-medium mb-2">{t('mood.notesLabel')}</h4>
+                                        <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
+                                            {viewMoodEntry.notes}
+                                        </p>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    );
+                }
+
+                return (
                     <Card>
                         <CardHeader>
-                            <CardTitle>{t('mood.title')}</CardTitle>
-                            <CardDescription>
-                                {t('mood.description')}
-                            </CardDescription>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <CardTitle>{t('mood.title')}</CardTitle>
+                                    <CardDescription>{t('mood.description')}</CardDescription>
+                                </div>
+                                <Button
+                                    onClick={() => setShowMoodTracker(true)}
+                                    className="islamic-green text-white"
+                                >
+                                    {t('mood.addNewEntry')}
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                <div className="text-center py-4">
-                                    <Heart className="w-16 h-16 mx-auto text-green-500 mb-4" />
-                                    <h3 className="text-lg font-medium mb-2">
-                                        {t('mood.readyToTrack')}
-                                    </h3>
-                                    <p className="text-muted-foreground mb-6">
-                                        {t('mood.trackingHelps')}
-                                    </p>
-                                    <Button
-                                        onClick={() => setShowMoodTracker(true)}
-                                        className="islamic-green text-white"
-                                    >
-                                        {t('mood.startMoodEntry')}
-                                    </Button>
-                                </div>
-
-                                {/* Recent Mood Entries */}
-                                {userData.moodEntries.length > 0 && (
-                                    <div className="border-t pt-4">
-                                        <h4 className="font-medium mb-3">
-                                            {t('mood.recentEntries')}
-                                        </h4>
+                                {userData.moodEntries.length === 0 ? (
+                                    <div className="text-center py-8">
+                                        <Heart className="w-16 h-16 mx-auto text-green-500 mb-4" />
+                                        <h3 className="text-lg font-medium mb-2">
+                                            {t('mood.readyToTrack')}
+                                        </h3>
+                                        <p className="text-muted-foreground mb-6">
+                                            {t('mood.trackingHelps')}
+                                        </p>
+                                        <Button
+                                            onClick={() => setShowMoodTracker(true)}
+                                            className="islamic-green text-white"
+                                        >
+                                            {t('mood.startMoodEntry')}
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        <h4 className="font-medium">{t('mood.moodHistory')}</h4>
                                         <div className="space-y-2">
-                                            {userData.moodEntries.slice(-3).reverse().map((entry) => (
-                                                <div key={entry.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                                                    <div>
-                                                        <span className="font-medium">{entry.date}</span>
-                                                        <span className="ml-2 text-muted-foreground">
-                                                            {t(`mood.levels.${entry.mood}`)}
-                                                        </span>
+                                            {userData.moodEntries.slice().reverse().map((entry) => (
+                                                <div
+                                                    key={entry.id}
+                                                    className="flex items-center justify-between p-4 bg-muted rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
+                                                    onClick={() => handleViewMoodEntry(entry)}
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div>
+                                                            <p className="font-medium">{entry.date}</p>
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {t(`mood.levels.${entry.mood}`)}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {entry.emotions.slice(0, 3).map(emotion => (
+                                                                <Badge key={emotion} variant="outline" className="text-xs">
+                                                                    {t(`emotions.${emotion}`)}
+                                                                </Badge>
+                                                            ))}
+                                                            {entry.emotions.length > 3 && (
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    +{entry.emotions.length - 3}
+                                                                </Badge>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                    <div className="text-xs text-muted-foreground">
-                                                        {entry.emotions.slice(0, 2).map(e => t(`emotions.${e}`)).join(', ')}
-                                                        {entry.emotions.length > 2 && ` +${entry.emotions.length - 2}`}
+                                                    <div className="text-sm text-muted-foreground">
+                                                        {t('mood.viewDetails')}
                                                     </div>
                                                 </div>
                                             ))}
@@ -250,34 +376,211 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                 return (
                     <Card>
                         <CardHeader>
-                            <CardTitle>{t('nav.journal')}</CardTitle>
-                            <CardDescription>
-                                {t('journal.description')}
-                            </CardDescription>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <CardTitle>{t('nav.journal')}</CardTitle>
+                                    <CardDescription>{t('journal.description')}</CardDescription>
+                                </div>
+                                <Button
+                                    className="islamic-green text-white"
+                                    onClick={() => {
+                                        // TODO: Add new journal entry functionality
+                                        alert(t('journal.addNewEntry'));
+                                    }}
+                                >
+                                    {t('journal.addNewEntry')}
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-center text-muted-foreground py-8">
-                                {t('journal.comingSoon')}
-                            </p>
+                            {userData.journalEntries.length === 0 ? (
+                                <div className="text-center py-8">
+                                    <BookOpen className="w-16 h-16 mx-auto text-blue-500 mb-4" />
+                                    <h3 className="text-lg font-medium mb-2">
+                                        {t('journal.startWriting')}
+                                    </h3>
+                                    <p className="text-muted-foreground mb-6">
+                                        {t('journal.writingHelps')}
+                                    </p>
+                                    <Button
+                                        className="islamic-green text-white"
+                                        onClick={() => {
+                                            // TODO: Add new journal entry functionality
+                                            alert(t('journal.addNewEntry'));
+                                        }}
+                                    >
+                                        {t('journal.startFirstEntry')}
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    <h4 className="font-medium">{t('journal.recentEntries')}</h4>
+                                    <div className="space-y-3">
+                                        {userData.journalEntries.slice().reverse().map((entry) => (
+                                            <div key={entry.id} className="p-4 bg-muted rounded-lg hover:bg-muted/80 cursor-pointer transition-colors">
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <h5 className="font-medium">{entry.title || t('journal.untitled')}</h5>
+                                                            {entry.mood && (
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    {t(`mood.levels.${entry.mood}`)}
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-sm text-muted-foreground mb-2">
+                                                            {entry.content.length > 100
+                                                                ? `${entry.content.substring(0, 100)}...`
+                                                                : entry.content}
+                                                        </p>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-muted-foreground">{entry.date}</span>
+                                                            {entry.tags.length > 0 && (
+                                                                <div className="flex gap-1">
+                                                                    {entry.tags.map(tag => (
+                                                                        <Badge key={tag} variant="secondary" className="text-xs">
+                                                                            {tag}
+                                                                        </Badge>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 );
 
             case 'insights':
+                const moodCounts = userData.moodEntries.reduce((acc, entry) => {
+                    acc[entry.mood] = (acc[entry.mood] || 0) + 1;
+                    return acc;
+                }, {} as Record<string, number>);
+
+                const mostCommonMood = Object.entries(moodCounts).sort(([, a], [, b]) => b - a)[0];
+                const averageEnergy = userData.moodEntries.length > 0
+                    ? userData.moodEntries.reduce((sum, entry) => sum + entry.energy, 0) / userData.moodEntries.length
+                    : 0;
+                const averageStress = userData.moodEntries.length > 0
+                    ? userData.moodEntries.reduce((sum, entry) => sum + entry.stress, 0) / userData.moodEntries.length
+                    : 0;
+
                 return (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t('nav.insights')}</CardTitle>
-                            <CardDescription>
-                                {t('insights.description')}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-center text-muted-foreground py-8">
-                                {t('insights.comingSoon')}
-                            </p>
-                        </CardContent>
-                    </Card>
+                    <div className="space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{t('insights.moodAnalytics')}</CardTitle>
+                                <CardDescription>{t('insights.last30Days')}</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {userData.moodEntries.length === 0 ? (
+                                    <div className="text-center py-8">
+                                        <BarChart3 className="w-16 h-16 mx-auto text-purple-500 mb-4" />
+                                        <h3 className="text-lg font-medium mb-2">
+                                            {t('insights.noDataYet')}
+                                        </h3>
+                                        <p className="text-muted-foreground mb-6">
+                                            {t('insights.startTracking')}
+                                        </p>
+                                        <Button
+                                            onClick={() => {
+                                                setActiveTab('mood');
+                                                setShowMoodTracker(true);
+                                            }}
+                                            className="islamic-green text-white"
+                                        >
+                                            {t('mood.startMoodEntry')}
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <div className="p-4 bg-muted rounded-lg">
+                                            <h4 className="font-medium mb-2">{t('insights.totalEntries')}</h4>
+                                            <p className="text-2xl font-bold text-green-600">
+                                                {userData.moodEntries.length}
+                                            </p>
+                                        </div>
+
+                                        {mostCommonMood && (
+                                            <div className="p-4 bg-muted rounded-lg">
+                                                <h4 className="font-medium mb-2">{t('insights.mostCommonMood')}</h4>
+                                                <p className="text-lg font-semibold">
+                                                    {t(`mood.levels.${mostCommonMood[0]}`)}
+                                                </p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    {mostCommonMood[1]} {t('insights.times')}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        <div className="p-4 bg-muted rounded-lg">
+                                            <h4 className="font-medium mb-2">{t('insights.averageEnergy')}</h4>
+                                            <p className="text-2xl font-bold text-yellow-600">
+                                                {averageEnergy.toFixed(1)}/5
+                                            </p>
+                                        </div>
+
+                                        <div className="p-4 bg-muted rounded-lg">
+                                            <h4 className="font-medium mb-2">{t('insights.averageStress')}</h4>
+                                            <p className="text-2xl font-bold text-red-600">
+                                                {averageStress.toFixed(1)}/5
+                                            </p>
+                                        </div>
+
+                                        <div className="p-4 bg-muted rounded-lg">
+                                            <h4 className="font-medium mb-2">{t('insights.journalEntries')}</h4>
+                                            <p className="text-2xl font-bold text-blue-600">
+                                                {userData.journalEntries.length}
+                                            </p>
+                                        </div>
+
+                                        <div className="p-4 bg-muted rounded-lg">
+                                            <h4 className="font-medium mb-2">{t('insights.streakDays')}</h4>
+                                            <p className="text-2xl font-bold text-purple-600">
+                                                {userData.moodEntries.length > 0 ? Math.min(userData.moodEntries.length, 7) : 0}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {userData.moodEntries.length > 0 && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>{t('insights.moodDistribution')}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-3">
+                                        {Object.entries(moodCounts).map(([mood, count]) => {
+                                            const percentage = (count / userData.moodEntries.length) * 100;
+                                            return (
+                                                <div key={mood} className="flex items-center justify-between">
+                                                    <span className="font-medium">{t(`mood.levels.${mood}`)}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                                                            <div
+                                                                className="h-full bg-green-500 rounded-full"
+                                                                style={{ width: `${percentage}%` }}
+                                                            />
+                                                        </div>
+                                                        <span className="text-sm text-muted-foreground w-12">
+                                                            {percentage.toFixed(0)}%
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
                 );
 
             case 'settings':
