@@ -22,6 +22,8 @@ import { JournalEntryComponent } from '@/components/journal-entry';
 import { JournalView } from '@/components/journal-view';
 import { MoodEntry, JournalEntry, User, UserData, ISLAMIC_QUOTES } from '@/lib/types';
 import { useTheme } from 'next-themes';
+import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DashboardProps {
     user: User;
@@ -42,6 +44,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
     const [journalEntries, setJournalEntries] = useState(userData.journalEntries || []);
     const { theme, setTheme } = useTheme();
     const { t, i18n } = useTranslation();
+    const isMobile = useIsMobile();
 
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
@@ -503,11 +506,15 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                                                                     </Badge>
                                                                 )}
                                                             </div>
-                                                            <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                                                                {entry.content.length > 120
-                                                                    ? `${entry.content.substring(0, 120)}...`
-                                                                    : entry.content}
-                                                            </p>
+                                                            <div
+                                                                className="text-sm text-muted-foreground mb-2 line-clamp-2"
+                                                                dangerouslySetInnerHTML={{
+                                                                    __html:
+                                                                        entry.content && entry.content.length > 120
+                                                                            ? `${entry.content.substring(0, 120)}...`
+                                                                            : entry.content || ''
+                                                                }}
+                                                            />
                                                             <div className="flex items-center gap-2">
                                                                 <span className="text-xs text-muted-foreground">
                                                                     {entry.date}
@@ -719,50 +726,69 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
     };
 
     return (
-        <div className="flex h-screen bg-background" dir={i18n.dir()}>
-            {/* Sidebar */}
-            <div className="w-64 bg-card border-l border-border p-4 flex flex-col">
-                <div className="mb-8">
-                    <h1 className="text-xl font-bold text-center font-arabic">
-                        🌱 {t('appTitle')}
-                    </h1>
-                </div>
+        <SidebarProvider>
+            <div className="flex h-screen w-full bg-background" dir={i18n.dir()}>
+                <Sidebar side={i18n.language === 'ar' ? 'right' : 'left'}>
+                    <SidebarHeader>
+                        <div className="flex items-center gap-2">
+                            <Sparkles className="w-8 h-8 text-green-500" />
+                            <h1 className="text-2xl font-semibold">{t('appTitle')}</h1>
+                        </div>
+                    </SidebarHeader>
+                    <SidebarContent>
+                        <SidebarMenu>
+                            {sidebarItems.map(item => (
+                                <SidebarMenuItem key={item.id}>
+                                    <SidebarMenuButton
+                                        onClick={() => setActiveTab(item.id as ActiveTab)}
+                                        isActive={activeTab === item.id}
+                                    >
+                                        <item.icon className="w-5 h-5" />
+                                        <span>{item.label}</span>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarContent>
+                    <SidebarFooter>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center justify-around p-2 rounded-md bg-muted">
+                                <Button variant="ghost" size="icon" onClick={() => setTheme('light')} className={theme === 'light' ? 'bg-accent' : ''}>
+                                    <Sun className="w-5 h-5" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => setTheme('dark')} className={theme === 'dark' ? 'bg-accent' : ''}>
+                                    <Moon className="w-5 h-5" />
+                                </Button>
+                            </div>
+                            <div className="flex items-center justify-around p-2 rounded-md bg-muted">
+                                <Button variant="ghost" size="icon" onClick={() => changeLanguage('en')} className={i18n.language === 'en' ? 'bg-accent' : ''}>
+                                    EN
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => changeLanguage('ar')} className={i18n.language === 'ar' ? 'bg-accent' : ''}>
+                                    AR
+                                </Button>
+                            </div>
+                            <Button variant="outline" onClick={onLogout}>
+                                <LogOut className="w-5 h-5 mr-2" />
+                                {t('nav.logout')}
+                            </Button>
+                        </div>
+                    </SidebarFooter>
+                </Sidebar>
 
-                <nav className="space-y-2 flex-grow">
-                    {sidebarItems.map((item) => (
-                        <Button
-                            key={item.id}
-                            variant={activeTab === item.id ? 'default' : 'ghost'}
-                            className="w-full justify-start gap-3"
-                            onClick={() => {
-                                setActiveTab(item.id as ActiveTab);
-                                if (item.id === 'mood') {
-                                    setShowMoodTracker(false);
-                                }
-                            }}
-                        >
-                            <item.icon className="w-5 h-5" />
-                            <span>{item.label}</span>
-                        </Button>
-                    ))}
-                </nav>
-
-                <div className="mt-auto space-y-2">
-                    <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-3"
-                        onClick={onLogout}
-                    >
-                        <LogOut className="w-4 h-4" />
-                        {t('nav.logout')}
-                    </Button>
-                </div>
+                <SidebarInset>
+                    <main className="flex-1 p-4 md:p-6  ">
+                        {isMobile && (
+                            <div className="mb-4">
+                                <SidebarTrigger />
+                            </div>
+                        )}
+                        <div className="w-full max-w-none">
+                            {renderContent()}
+                        </div>
+                    </main>
+                </SidebarInset>
             </div>
-
-            {/* Main Content */}
-            <main className="flex-1 overflow-y-auto p-6">
-                {renderContent()}
-            </main>
-        </div>
+        </SidebarProvider>
     );
 }
