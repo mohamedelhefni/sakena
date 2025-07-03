@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@100;200;300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -116,7 +117,50 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Arabic Font Support */
+  [lang="ar"],
+  [dir="rtl"] {
+    font-family: 'Noto Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  /* RTL Support */
+  [dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+  }
+
+  /* Islamic-themed colors */
+  .islamic-green {
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  }
+
+  .islamic-gold {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  }
+
+  /* Mood tracking specific styles */
+  .mood-card {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+  }
+
+  .mood-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Journal entry styles */
+  .journal-entry {
+    line-height: 1.8;
+    font-size: 1.1rem;
+  }
+
+  [dir="rtl"] .journal-entry {
+    text-align: right;
   }
 }
