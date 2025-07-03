@@ -72,14 +72,14 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
         let updatedEntries;
         if (editJournalEntry) {
             // Update existing entry
-            updatedEntries = userData.journalEntries.map(e => 
+            updatedEntries = userData.journalEntries.map(e =>
                 e.id === entry.id ? entry : e
             );
         } else {
             // Add new entry
             updatedEntries = [...userData.journalEntries, entry];
         }
-        
+
         const updatedData = {
             ...userData,
             journalEntries: updatedEntries,
@@ -480,8 +480,8 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                                             .slice()
                                             .reverse()
                                             .map((entry) => (
-                                                <div 
-                                                    key={entry.id} 
+                                                <div
+                                                    key={entry.id}
                                                     className="p-4 bg-muted rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
                                                     onClick={() => handleViewJournalEntry(entry)}
                                                 >
@@ -504,28 +504,14 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                                                                 )}
                                                             </div>
                                                             <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                                                                {entry.content.length > 120 
-                                                                    ? `${entry.content.substring(0, 120)}...` 
+                                                                {entry.content.length > 120
+                                                                    ? `${entry.content.substring(0, 120)}...`
                                                                     : entry.content}
                                                             </p>
                                                             <div className="flex items-center gap-2">
                                                                 <span className="text-xs text-muted-foreground">
                                                                     {entry.date}
                                                                 </span>
-                                                                {entry.tags.length > 0 && (
-                                                                    <div className="flex gap-1">
-                                                                        {entry.tags.slice(0, 3).map(tag => (
-                                                                            <Badge key={tag} variant="secondary" className="text-xs">
-                                                                                {tag}
-                                                                            </Badge>
-                                                                        ))}
-                                                                        {entry.tags.length > 3 && (
-                                                                            <Badge variant="secondary" className="text-xs">
-                                                                                +{entry.tags.length - 3}
-                                                                            </Badge>
-                                                                        )}
-                                                                    </div>
-                                                                )}
                                                             </div>
                                                         </div>
                                                         <div className="text-sm text-muted-foreground">

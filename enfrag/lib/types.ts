@@ -21,10 +21,9 @@ export interface JournalEntry {
     date: string;
     title?: string;
     content: string;
-    tags: string[];
     mood?: MoodLevel;
+    emotions?: string[];
     isPrivate: boolean;
-    islamicReflection?: string;
 }
 
 export interface User {
