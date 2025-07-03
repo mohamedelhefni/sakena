@@ -18,7 +18,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MoodTracker } from '@/components/mood-tracker';
-import { MoodEntry, User, UserData, ISLAMIC_QUOTES } from '@/lib/types';
+import { JournalEntryComponent } from '@/components/journal-entry';
+import { JournalView } from '@/components/journal-view';
+import { MoodEntry, JournalEntry, User, UserData, ISLAMIC_QUOTES } from '@/lib/types';
 import { useTheme } from 'next-themes';
 
 interface DashboardProps {
@@ -34,6 +36,9 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
     const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
     const [showMoodTracker, setShowMoodTracker] = useState(false);
     const [viewMoodEntry, setViewMoodEntry] = useState<MoodEntry | null>(null);
+    const [showJournalEntry, setShowJournalEntry] = useState(false);
+    const [viewJournalEntry, setViewJournalEntry] = useState<JournalEntry | null>(null);
+    const [editJournalEntry, setEditJournalEntry] = useState<JournalEntry | null>(null);
     const [journalEntries, setJournalEntries] = useState(userData.journalEntries || []);
     const { theme, setTheme } = useTheme();
     const { t, i18n } = useTranslation();
@@ -61,6 +66,45 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
 
     const handleBackFromMoodView = () => {
         setViewMoodEntry(null);
+    };
+
+    const handleSaveJournalEntry = (entry: JournalEntry) => {
+        let updatedEntries;
+        if (editJournalEntry) {
+            // Update existing entry
+            updatedEntries = userData.journalEntries.map(e => 
+                e.id === entry.id ? entry : e
+            );
+        } else {
+            // Add new entry
+            updatedEntries = [...userData.journalEntries, entry];
+        }
+        
+        const updatedData = {
+            ...userData,
+            journalEntries: updatedEntries,
+        };
+        onUpdateData(updatedData);
+        setJournalEntries(updatedEntries);
+        setShowJournalEntry(false);
+        setEditJournalEntry(null);
+        setActiveTab('journal');
+    };
+
+    const handleViewJournalEntry = (entry: JournalEntry) => {
+        setViewJournalEntry(entry);
+    };
+
+    const handleEditJournalEntry = (entry: JournalEntry) => {
+        setEditJournalEntry(entry);
+        setViewJournalEntry(null);
+        setShowJournalEntry(true);
+    };
+
+    const handleBackFromJournalView = () => {
+        setViewJournalEntry(null);
+        setEditJournalEntry(null);
+        setShowJournalEntry(false);
     };
 
     const sidebarItems = [
@@ -373,6 +417,26 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                 );
 
             case 'journal':
+                if (showJournalEntry) {
+                    return (
+                        <JournalEntryComponent
+                            onSave={handleSaveJournalEntry}
+                            onCancel={handleBackFromJournalView}
+                            existingEntry={editJournalEntry || undefined}
+                        />
+                    );
+                }
+
+                if (viewJournalEntry) {
+                    return (
+                        <JournalView
+                            entry={viewJournalEntry}
+                            onEdit={() => handleEditJournalEntry(viewJournalEntry)}
+                            onBack={handleBackFromJournalView}
+                        />
+                    );
+                }
+
                 return (
                     <Card>
                         <CardHeader>
@@ -383,10 +447,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                                 </div>
                                 <Button
                                     className="islamic-green text-white"
-                                    onClick={() => {
-                                        // TODO: Add new journal entry functionality
-                                        alert(t('journal.addNewEntry'));
-                                    }}
+                                    onClick={() => setShowJournalEntry(true)}
                                 >
                                     {t('journal.addNewEntry')}
                                 </Button>
@@ -404,51 +465,75 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                                     </p>
                                     <Button
                                         className="islamic-green text-white"
-                                        onClick={() => {
-                                            // TODO: Add new journal entry functionality
-                                            alert(t('journal.addNewEntry'));
-                                        }}
+                                        onClick={() => setShowJournalEntry(true)}
                                     >
                                         {t('journal.startFirstEntry')}
                                     </Button>
                                 </div>
                             ) : (
-                                <div className="space-y-3">
-                                    <h4 className="font-medium">{t('journal.recentEntries')}</h4>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="font-medium">{t('journal.allEntries')} ({userData.journalEntries.length})</h4>
+                                    </div>
                                     <div className="space-y-3">
-                                        {userData.journalEntries.slice().reverse().map((entry) => (
-                                            <div key={entry.id} className="p-4 bg-muted rounded-lg hover:bg-muted/80 cursor-pointer transition-colors">
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <h5 className="font-medium">{entry.title || t('journal.untitled')}</h5>
-                                                            {entry.mood && (
-                                                                <Badge variant="outline" className="text-xs">
-                                                                    {t(`mood.levels.${entry.mood}`)}
-                                                                </Badge>
-                                                            )}
+                                        {userData.journalEntries
+                                            .slice()
+                                            .reverse()
+                                            .map((entry) => (
+                                                <div 
+                                                    key={entry.id} 
+                                                    className="p-4 bg-muted rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
+                                                    onClick={() => handleViewJournalEntry(entry)}
+                                                >
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <h5 className="font-medium">
+                                                                    {entry.title || t('journal.untitled')}
+                                                                </h5>
+                                                                {entry.mood && (
+                                                                    <Badge variant="outline" className="text-xs">
+                                                                        <Heart className="w-3 h-3 mr-1" />
+                                                                        {t(`mood.levels.${entry.mood}`)}
+                                                                    </Badge>
+                                                                )}
+                                                                {entry.isPrivate && (
+                                                                    <Badge variant="destructive" className="text-xs">
+                                                                        Private
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                                                                {entry.content.length > 120 
+                                                                    ? `${entry.content.substring(0, 120)}...` 
+                                                                    : entry.content}
+                                                            </p>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs text-muted-foreground">
+                                                                    {entry.date}
+                                                                </span>
+                                                                {entry.tags.length > 0 && (
+                                                                    <div className="flex gap-1">
+                                                                        {entry.tags.slice(0, 3).map(tag => (
+                                                                            <Badge key={tag} variant="secondary" className="text-xs">
+                                                                                {tag}
+                                                                            </Badge>
+                                                                        ))}
+                                                                        {entry.tags.length > 3 && (
+                                                                            <Badge variant="secondary" className="text-xs">
+                                                                                +{entry.tags.length - 3}
+                                                                            </Badge>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        <p className="text-sm text-muted-foreground mb-2">
-                                                            {entry.content.length > 100
-                                                                ? `${entry.content.substring(0, 100)}...`
-                                                                : entry.content}
-                                                        </p>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-xs text-muted-foreground">{entry.date}</span>
-                                                            {entry.tags.length > 0 && (
-                                                                <div className="flex gap-1">
-                                                                    {entry.tags.map(tag => (
-                                                                        <Badge key={tag} variant="secondary" className="text-xs">
-                                                                            {tag}
-                                                                        </Badge>
-                                                                    ))}
-                                                                </div>
-                                                            )}
+                                                        <div className="text-sm text-muted-foreground">
+                                                            {t('journal.viewEntry')}
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))}
                                     </div>
                                 </div>
                             )}
