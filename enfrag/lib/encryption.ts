@@ -59,7 +59,8 @@ export class EncryptionService {
 export class SecureStorage {
     private static readonly STORAGE_KEY = 'mood_tracker_data';
     private static readonly USER_KEY = 'mood_tracker_user';
-    private static readonly SESSION_KEY = 'mood_tracker_session';
+    private static readonly SESSION_PIN_KEY = 'mood_tracker_session_pin';
+    private static readonly SESSION_TIMESTAMP_KEY = 'mood_tracker_session_timestamp';
     private static readonly SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
     static saveUserData(userData: any, pin: string): boolean {
@@ -99,31 +100,22 @@ export class SecureStorage {
     }
 
     static saveSession(pin: string): void {
-        const session = {
-            pin,
-            timestamp: Date.now(),
-            expires: Date.now() + this.SESSION_TIMEOUT
-        };
-        const encrypted = EncryptionService.encrypt(JSON.stringify(session), 'session_key_' + Date.now());
-        localStorage.setItem(this.SESSION_KEY, encrypted.encrypted);
+        localStorage.setItem(this.SESSION_PIN_KEY, pin);
+        localStorage.setItem(this.SESSION_TIMESTAMP_KEY, Date.now().toString());
     }
 
     static getValidSession(): string | null {
         try {
-            const encryptedSession = localStorage.getItem(this.SESSION_KEY);
-            if (!encryptedSession) return null;
+            const timestampStr = localStorage.getItem(this.SESSION_TIMESTAMP_KEY);
+            if (!timestampStr) return null;
 
-            // For session, we'll use a simpler approach - just check timestamp
-            const sessionData = localStorage.getItem(this.SESSION_KEY + '_timestamp');
-            if (!sessionData) return null;
-
-            const timestamp = parseInt(sessionData);
+            const timestamp = parseInt(timestampStr);
             if (Date.now() - timestamp > this.SESSION_TIMEOUT) {
                 this.clearSession();
                 return null;
             }
 
-            const pin = localStorage.getItem(this.SESSION_KEY + '_pin');
+            const pin = localStorage.getItem(this.SESSION_PIN_KEY);
             return pin;
         } catch (error) {
             console.error('Failed to get session:', error);
@@ -131,15 +123,9 @@ export class SecureStorage {
         }
     }
 
-    static saveSimpleSession(pin: string): void {
-        localStorage.setItem(this.SESSION_KEY + '_pin', pin);
-        localStorage.setItem(this.SESSION_KEY + '_timestamp', Date.now().toString());
-    }
-
     static clearSession(): void {
-        localStorage.removeItem(this.SESSION_KEY);
-        localStorage.removeItem(this.SESSION_KEY + '_pin');
-        localStorage.removeItem(this.SESSION_KEY + '_timestamp');
+        localStorage.removeItem(this.SESSION_PIN_KEY);
+        localStorage.removeItem(this.SESSION_TIMESTAMP_KEY);
     }
 
     static clearAllData(): void {

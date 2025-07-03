@@ -42,7 +42,7 @@ export default function Home() {
     setCurrentPin(pin);
 
     // Save session for auto-login
-    SecureStorage.saveSimpleSession(pin);
+    SecureStorage.saveSession(pin);
 
     // Load user data
     const loadedData = SecureStorage.loadUserData(pin);
