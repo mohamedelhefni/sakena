@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" 
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <!-- Main pages -->
+  <url>
+    <loc>https://sakinah-app.com</loc>
+    <lastmod>2024-12-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://sakinah-app.com?lang=ar"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sakinah-app.com?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://sakinah-app.com"/>
+  </url>
+
+  <!-- Arabic version -->
+  <url>
+    <loc>https://sakinah-app.com?lang=ar</loc>
+    <lastmod>2024-12-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://sakinah-app.com?lang=ar"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sakinah-app.com?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://sakinah-app.com"/>
+  </url>
+
+  <!-- English version -->
+  <url>
+    <loc>https://sakinah-app.com?lang=en</loc>
+    <lastmod>2024-12-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://sakinah-app.com?lang=ar"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sakinah-app.com?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://sakinah-app.com"/>
+  </url>
+
+  <!-- App pages (for future use) -->
+  <url>
+    <loc>https://sakinah-app.com/privacy</loc>
+    <lastmod>2024-12-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://sakinah-app.com/terms</loc>
+    <lastmod>2024-12-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://sakinah-app.com/about</loc>
+    <lastmod>2024-12-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- PWA manifest -->
+  <url>
+    <loc>https://sakinah-app.com/manifest.json</loc>
+    <lastmod>2024-12-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+</urlset>

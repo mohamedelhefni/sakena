@@ -1,0 +1,142 @@
+{
+  "name": "Sakinah - Mental Health & Mood Tracker",
+  "short_name": "Sakinah",
+  "description": "A beautiful, secure Progressive Web App for mood tracking, journaling, and mental wellness with Islamic features. Track emotions, write private journals, and improve mental health with analytics.",
+  "start_url": "/?utm_source=pwa&utm_medium=homescreen",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
+  "orientation": "portrait-primary",
+  "lang": "ar",
+  "dir": "auto",
+  "categories": ["health", "lifestyle", "medical", "productivity"],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/mobile-1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard view showing mood tracking and journal entries"
+    },
+    {
+      "src": "/screenshots/mobile-2.png", 
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mood tracking interface with emotion selection"
+    },
+    {
+      "src": "/screenshots/desktop-1.png",
+      "sizes": "1280x720",
+      "type": "image/png", 
+      "form_factor": "wide",
+      "label": "Desktop view of analytics dashboard"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add Mood Entry",
+      "short_name": "Mood",
+      "description": "Quickly track your current mood",
+      "url": "/?action=mood&utm_source=pwa_shortcut",
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Write Journal",
+      "short_name": "Journal", 
+      "description": "Write a new journal entry",
+      "url": "/?action=journal&utm_source=pwa_shortcut",
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "View Insights",
+      "short_name": "Insights",
+      "description": "Check your mood analytics",
+      "url": "/?action=insights&utm_source=pwa_shortcut", 
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "features": [
+    "offline",
+    "secure-storage",
+    "mood-tracking",
+    "journal",
+    "analytics",
+    "islamic-features",
+    "bilingual-support",
+    "data-encryption"
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "related_applications": [],
+  "prefer_related_applications": false
+}

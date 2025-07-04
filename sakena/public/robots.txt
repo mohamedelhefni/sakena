@@ -1,0 +1,36 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://sakinah-app.com/sitemap.xml
+
+# Disallow crawling of service worker and manifest files
+Disallow: /sw.js
+Disallow: /workbox-*.js
+Disallow: /_next/static/chunks/
+
+# Allow important PWA files
+Allow: /manifest.json
+Allow: /icons/
+
+# Crawl delay (optional)
+Crawl-delay: 1
+
+# Specific bot instructions
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Social media bots
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /

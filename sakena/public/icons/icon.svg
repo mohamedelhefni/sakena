@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="heartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#16a34a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="rgba(0,0,0,0.3)"/>
+    </filter>
+  </defs>
+  
+  <!-- Background circle for better visibility -->
+  <circle cx="256" cy="256" r="240" fill="white" filter="url(#shadow)" opacity="0.1"/>
+  
+  <!-- Heart shape -->
+  <path d="M256 448l-32-29.6C102.4 306.4 32 241.6 32 160c0-53.6 43.2-96 96-96 28.8 0 56 12.8 76.8 33.6L256 149.6l51.2-52C328 76.8 355.2 64 384 64c52.8 0 96 42.4 96 96 0 81.6-70.4 146.4-192 258.4L256 448z" 
+        fill="url(#heartGradient)" 
+        filter="url(#shadow)"/>
+  
+  <!-- Highlight for depth -->
+  <path d="M256 160l-20-18.4C140 44.8 80 96 80 160c0 60.8 52.8 108.8 156 200l20 18.4 20-18.4c103.2-91.2 156-139.2 156-200 0-64-60-115.2-156-18.4L256 160z" 
+        fill="rgba(255,255,255,0.2)"/>
+  
+  <!-- Inner glow -->
+  <path d="M256 380l-24-22.2C132.8 268.8 80 228 80 160c0-40.8 32.8-73.6 73.6-73.6 21.6 0 42.4 9.6 57.6 25.6L256 160l44.8-48c15.2-16 36-25.6 57.6-25.6 40.8 0 73.6 32.8 73.6 73.6 0 68-52.8 108.8-152 197.6L256 380z" 
+        fill="rgba(255,255,255,0.1)"/>
+</svg>
