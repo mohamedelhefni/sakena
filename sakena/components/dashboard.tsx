@@ -371,7 +371,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
                 <Sidebar side={i18n.language === 'ar' ? 'right' : 'left'} >
                     <SidebarHeader>
                         <div className="flex items-center gap-2">
-                            <Sparkles className="w-8 h-8 text-green-500" />
+                            <Heart className="w-8 h-8 text-green-500" />
                             <h1 className="text-2xl font-semibold">{t('appTitle')}</h1>
                         </div>
                     </SidebarHeader>

@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin '@tailwindcss/typography';
@@ -142,6 +143,14 @@
 
   .islamic-gold {
     background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  }
+
+  .quran-font {
+    font-family: 'Amiri', serif !important;
+  }
+
+  .font-amiri {
+    font-family: 'Amiri', serif !important;
   }
 
   /* Mood tracking specific styles */

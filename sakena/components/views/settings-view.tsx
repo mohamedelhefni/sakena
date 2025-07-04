@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { User, UserData } from '@/lib/types';
 import { useTheme } from 'next-themes';
+import { PWADemo } from '@/components/pwa-demo';
 
 interface SettingsViewProps {
     user: User;
@@ -34,11 +35,12 @@ export function SettingsView({ user, userData, onChangeUsername, onUpdateData }:
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{t('nav.settings')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+        <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>{t('nav.settings')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
                 <div>
                     <h3 className="font-medium mb-3">{t('settings.theme')}</h3>
                     <div className="flex gap-2">
@@ -124,5 +126,9 @@ export function SettingsView({ user, userData, onChangeUsername, onUpdateData }:
                 </div>
             </CardContent>
         </Card>
+
+        {/* PWA Features */}
+        <PWADemo />
+    </div>
     );
 }

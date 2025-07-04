@@ -121,7 +121,7 @@ export function QuranPlayer({ enabled }: QuranPlayerProps) {
     }
 
     return (
-        <Card className="w-full">
+        <Card className="w-full quran-font">
             <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-lg flex items-center gap-2">
