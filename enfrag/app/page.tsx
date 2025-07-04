@@ -78,6 +78,12 @@ export default function Home() {
     setCurrentPin('');
   };
 
+  const handleUpdateUser = async (newUser: User) => {
+    setUser(newUser);
+    // Optionally save the updated user profile
+    await SecureIndexedDBStorage.saveUserProfile(newUser.username);
+  };
+
   const handleUpdateData = async (newData: UserData) => {
     setUserData(newData);
     await SecureIndexedDBStorage.saveUserData(newData, currentPin);
@@ -104,6 +110,8 @@ export default function Home() {
       userData={userData}
       onLogout={handleLogout}
       onUpdateData={handleUpdateData}
+      onUpdateUser={handleUpdateUser}
+      currentPin={currentPin}
     />
   );
 }

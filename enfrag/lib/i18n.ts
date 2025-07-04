@@ -179,12 +179,16 @@ const resources = {
                 light: 'فاتح',
                 dark: 'داكن',
                 userInfo: 'معلومات المستخدم',
+                changeUsername: 'تغيير اسم المستخدم',
+                changeUsernameDescription: 'يمكنك تغيير اسم المستخدم الخاص بك هنا',
             },
             common: {
                 save: 'حفظ',
                 cancel: 'إلغاء',
                 back: 'رجوع',
                 delete: 'حذف',
+                confirmDelete: 'هل أنت متأكد من حذف هذا الإدخال؟',
+                deleteConfirmation: 'هل أنت متأكد من حذف هذا الإدخال؟',
             },
         }
     },
@@ -352,11 +356,22 @@ const resources = {
                 streakDays: 'Streak Days',
                 moodDistribution: 'Mood Distribution',
             },
+            settings: {
+                theme: 'Theme',
+                language: 'Language',
+                light: 'Light',
+                dark: 'Dark',
+                userInfo: 'User Information',
+                changeUsername: 'Change Username',
+                changeUsernameDescription: 'You can change your username here',
+            },
             common: {
                 save: 'Save',
                 cancel: 'Cancel',
                 back: 'Back',
                 delete: 'Delete',
+                confirmDeletion: 'Are you sure you want to delete this entry?',
+                deleteConfirmation: 'Are you sure you want to delete this entry?',
             },
         }
     }

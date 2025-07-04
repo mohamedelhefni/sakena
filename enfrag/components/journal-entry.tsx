@@ -56,7 +56,7 @@ export function JournalEntryComponent({ onSave, onCancel, existingEntry }: Journ
         <div className="min-h-screen bg-background flex flex-col">
             {/* Header */}
             <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
-                <div className="flex items-center justify-between p-4 max-w-4xl mx-auto">
+                <div className="flex items-center justify-between flex-wrap p-4 max-w-4xl mx-auto">
                     <div className="flex items-center gap-3">
                         <BookOpen className="w-6 h-6 text-green-600" />
                         <div>

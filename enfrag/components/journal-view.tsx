@@ -33,7 +33,7 @@ export function JournalView({ entry, onEdit, onBack, onDelete }: JournalViewProp
     return (
         <Card>
             <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap">
                     <div className="flex-1">
                         <CardTitle className="flex items-center gap-2">
                             <BookOpen className="w-5 h-5" />

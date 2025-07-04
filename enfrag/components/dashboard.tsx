@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { MoodTracker } from '@/components/mood-tracker';
 import { JournalEntryComponent } from '@/components/journal-entry';
 import { JournalView } from '@/components/journal-view';
@@ -34,11 +35,13 @@ interface DashboardProps {
     userData: UserData;
     onLogout: () => void;
     onUpdateData: (data: UserData) => void;
+    onUpdateUser?: (user: User) => void;
+    currentPin?: string;
 }
 
 type ActiveTab = 'dashboard' | 'mood' | 'journal' | 'insights' | 'settings';
 
-export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardProps) {
+export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser, currentPin }: DashboardProps) {
     const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
     const [showMoodTracker, setShowMoodTracker] = useState(false);
     const [viewMoodEntry, setViewMoodEntry] = useState<MoodEntry | null>(null);
@@ -48,6 +51,8 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
     const [journalEntries, setJournalEntries] = useState(userData.journalEntries || []);
     const [confirmDeleteMood, setConfirmDeleteMood] = useState<string | null>(null);
     const [confirmDeleteJournal, setConfirmDeleteJournal] = useState<string | null>(null);
+    const [showEditUsername, setShowEditUsername] = useState(false);
+    const [newUsername, setNewUsername] = useState(user.username);
     const { theme, setTheme } = useTheme();
     const { t, i18n } = useTranslation();
     const isMobile = useIsMobile();
@@ -65,6 +70,37 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
 
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
+    };
+
+    const handleUsernameChange = async () => {
+        if (!newUsername.trim() || newUsername.trim() === user.username) {
+            setShowEditUsername(false);
+            return;
+        }
+
+        try {
+            // Update user object with new username
+            const updatedUser = { ...user, username: newUsername.trim() };
+
+            // Save the updated user data to storage
+            await SecureIndexedDBStorage.saveUserData(userData, currentPin || '');
+
+            // Update user profile in storage
+            await SecureIndexedDBStorage.saveUserProfile(newUsername.trim());
+
+            // Update both user and userData in parent component
+            if (onUpdateUser) {
+                onUpdateUser(updatedUser);
+            }
+            onUpdateData(userData);
+
+            setShowEditUsername(false);
+        } catch (error) {
+            console.error('Failed to update username:', error);
+            // Reset to original username on error
+            setNewUsername(user.username);
+            setShowEditUsername(false);
+        }
     };
 
     // Get today's Islamic quote
@@ -312,7 +348,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                     return (
                         <Card>
                             <CardHeader>
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between flex-wrap">
                                     <div>
                                         <CardTitle>{t('mood.viewEntry')}</CardTitle>
                                         <CardDescription>{formatDate(viewMoodEntry.date)} {viewMoodEntry.time && `- ${viewMoodEntry.time}`}</CardDescription>
@@ -406,7 +442,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                 return (
                     <Card>
                         <CardHeader>
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between flex-wrap">
                                 <div>
                                     <CardTitle>{t('mood.title')}</CardTitle>
                                     <CardDescription>{t('mood.description')}</CardDescription>
@@ -444,7 +480,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                                             {userData.moodEntries.slice().reverse().map((entry) => (
                                                 <div
                                                     key={entry.id}
-                                                    className="flex items-center justify-between p-4 bg-muted rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
+                                                    className="flex items-center justify-between flex-wrap p-4 bg-muted rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
                                                     onClick={() => handleViewMoodEntry(entry)}
                                                 >
                                                     <div className="flex items-center gap-4">
@@ -505,7 +541,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                 return (
                     <Card>
                         <CardHeader>
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between flex-wrap">
                                 <div>
                                     <CardTitle>{t('nav.journal')}</CardTitle>
                                     <CardDescription>{t('journal.description')}</CardDescription>
@@ -537,7 +573,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex items-center justify-between flex-wrap">
                                         <h4 className="font-medium">{t('journal.allEntries')} ({userData.journalEntries.length})</h4>
                                     </div>
                                     <div className="space-y-3">
@@ -704,7 +740,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                                         {Object.entries(moodCounts).map(([mood, count]) => {
                                             const percentage = (count / userData.moodEntries.length) * 100;
                                             return (
-                                                <div key={mood} className="flex items-center justify-between">
+                                                <div key={mood} className="flex items-center justify-between flex-wrap">
                                                     <span className="font-medium">{t(`mood.levels.${mood}`)}</span>
                                                     <div className="flex items-center gap-2">
                                                         <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
@@ -778,9 +814,28 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
 
                             <div>
                                 <h3 className="font-medium mb-3">{t('settings.userInfo')}</h3>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('auth.usernameLabel')}: {user.username}
-                                </p>
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between flex-wrap">
+                                        <div>
+                                            <p className="text-sm font-medium">
+                                                {t('auth.usernameLabel')}: {user.username}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {t('settings.changeUsernameDescription')}
+                                            </p>
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                setNewUsername(user.username);
+                                                setShowEditUsername(true);
+                                            }}
+                                        >
+                                            {t('settings.changeUsername')}
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -869,9 +924,6 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>{t('common.confirmDelete')}</DialogTitle>
-                        <DialogDescription>
-                            {t('mood.deleteConfirmation')}
-                        </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setConfirmDeleteMood(null)}>
@@ -891,9 +943,6 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>{t('common.confirmDelete')}</DialogTitle>
-                        <DialogDescription>
-                            {t('journal.deleteConfirmation')}
-                        </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setConfirmDeleteJournal(null)}>
@@ -904,6 +953,43 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                             onClick={() => confirmDeleteJournal && handleDeleteJournalEntry(confirmDeleteJournal)}
                         >
                             {t('common.delete')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Username Change Dialog */}
+            <Dialog open={showEditUsername} onOpenChange={setShowEditUsername}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t('settings.changeUsername')}</DialogTitle>
+                        <DialogDescription>
+                            {t('settings.changeUsernameDescription')}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div>
+                            <label htmlFor="newUsername" className="text-sm font-medium">
+                                {t('auth.usernameLabel')}
+                            </label>
+                            <Input
+                                id="newUsername"
+                                value={newUsername}
+                                onChange={(e) => setNewUsername(e.target.value)}
+                                placeholder={t('auth.usernamePlaceholder')}
+                                className="mt-1"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowEditUsername(false)}>
+                            {t('common.cancel')}
+                        </Button>
+                        <Button
+                            onClick={handleUsernameChange}
+                            disabled={!newUsername.trim() || newUsername.trim() === user.username}
+                        >
+                            {t('common.save')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
