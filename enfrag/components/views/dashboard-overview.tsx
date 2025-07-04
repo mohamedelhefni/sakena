@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { User, UserData, ISLAMIC_QUOTES } from '@/lib/types';
+import { QuranPlayer } from '@/components/quran-player';
 
 interface DashboardOverviewProps {
     user: User;
@@ -42,26 +43,12 @@ export function DashboardOverview({
                     </CardHeader>
                 </Card>
 
-                {/* Islamic Quote of the Day */}
-                <Card className="col-span-full islamic-green text-white">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Sparkles className="w-5 h-5" />
-                            {t('dashboard.verseOfDay')}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <blockquote className="text-lg mb-4 font-arabic leading-relaxed">
-                            "{todayQuote.arabic}"
-                        </blockquote>
-                        <p className="text-sm opacity-90 mb-2">
-                            "{todayQuote.translation}"
-                        </p>
-                        <p className="text-xs opacity-75">
-                            - {todayQuote.source}
-                        </p>
-                    </CardContent>
-                </Card>
+                {/* Quran Player - Only show if Islamic features are enabled */}
+                {userData.settings.islamicFeatures && (
+                    <div className="col-span-full">
+                        <QuranPlayer enabled={userData.settings.islamicFeatures} />
+                    </div>
+                )}
 
                 {/* Quick Stats */}
                 <Card>
@@ -87,18 +74,20 @@ export function DashboardOverview({
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>{t('dashboard.dailyPractices')}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex flex-wrap gap-2">
-                            <Badge variant="secondary">{t('practices.prayer')}</Badge>
-                            <Badge variant="secondary">{t('practices.quran')}</Badge>
-                            <Badge variant="secondary">{t('practices.dhikr')}</Badge>
-                        </div>
-                    </CardContent>
-                </Card>
+                {userData.settings.islamicFeatures && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>{t('dashboard.dailyPractices')}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex flex-wrap gap-2">
+                                <Badge variant="secondary">{t('practices.prayer')}</Badge>
+                                <Badge variant="secondary">{t('practices.quran')}</Badge>
+                                <Badge variant="secondary">{t('practices.dhikr')}</Badge>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
 
             {/* Quick Actions */}

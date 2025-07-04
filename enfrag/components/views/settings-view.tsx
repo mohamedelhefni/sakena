@@ -1,23 +1,36 @@
 "use client";
 
 import { useTranslation } from 'react-i18next';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User } from '@/lib/types';
+import { User, UserData } from '@/lib/types';
 import { useTheme } from 'next-themes';
 
 interface SettingsViewProps {
     user: User;
+    userData: UserData;
     onChangeUsername: () => void;
+    onUpdateData: (data: UserData) => void;
 }
 
-export function SettingsView({ user, onChangeUsername }: SettingsViewProps) {
+export function SettingsView({ user, userData, onChangeUsername, onUpdateData }: SettingsViewProps) {
     const { t, i18n } = useTranslation();
     const { theme, setTheme } = useTheme();
 
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
+    };
+
+    const toggleIslamicFeatures = () => {
+        const updatedData = {
+            ...userData,
+            settings: {
+                ...userData.settings,
+                islamicFeatures: !userData.settings.islamicFeatures
+            }
+        };
+        onUpdateData(updatedData);
     };
 
     return (
@@ -64,6 +77,25 @@ export function SettingsView({ user, onChangeUsername }: SettingsViewProps) {
                             onClick={() => changeLanguage('ar')}
                         >
                             العربية
+                        </Button>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 className="font-medium mb-3">{t('settings.islamicFeatures')}</h3>
+                    <div className="flex items-center justify-between flex-wrap">
+                        <div>
+                            <p className="text-sm text-muted-foreground mb-2">
+                                {t('settings.islamicFeaturesDescription')}
+                            </p>
+                        </div>
+                        <Button
+                            variant={userData.settings.islamicFeatures ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={toggleIslamicFeatures}
+                        >
+                            <Star className="w-4 h-4 ml-2" />
+                            {userData.settings.islamicFeatures ? t('settings.enabled') : t('settings.disabled')}
                         </Button>
                     </div>
                 </div>

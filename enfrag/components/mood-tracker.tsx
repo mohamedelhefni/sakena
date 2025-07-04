@@ -10,15 +10,16 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Heart, Star, Moon, Zap, Coffee } from 'lucide-react';
-import { MoodEntry, MoodLevel, EMOTIONS } from '@/lib/types';
+import { MoodEntry, MoodLevel, EMOTIONS, UserData } from '@/lib/types';
 import { format } from 'date-fns';
 
 interface MoodTrackerProps {
+    userData: UserData;
     onSave: (entry: MoodEntry) => void;
     onCancel: () => void;
 }
 
-export function MoodTracker({ onSave, onCancel }: MoodTrackerProps) {
+export function MoodTracker({ userData, onSave, onCancel }: MoodTrackerProps) {
     const { t } = useTranslation();
     const [mood, setMood] = useState<MoodLevel>('neutral');
     const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
@@ -200,17 +201,19 @@ export function MoodTracker({ onSave, onCancel }: MoodTrackerProps) {
                     </div>
 
                     {/* Islamic Practices */}
-                    <div className="space-y-3">
-                        <Label className="text-base font-medium flex items-center gap-2">
-                            <Star className="w-5 h-5 text-amber-500" /> {t('mood.islamicPracticesTitle')}
-                        </Label>
-                        <div className="flex flex-wrap gap-2">
-                            <Button variant={islamicPractices.prayer ? 'default' : 'outline'} onClick={() => toggleIslamicPractice('prayer')}>{t('mood.practices.prayer')}</Button>
-                            <Button variant={islamicPractices.quran ? 'default' : 'outline'} onClick={() => toggleIslamicPractice('quran')}>{t('mood.practices.quran')}</Button>
-                            <Button variant={islamicPractices.dhikr ? 'default' : 'outline'} onClick={() => toggleIslamicPractice('dhikr')}>{t('mood.practices.dhikr')}</Button>
-                            <Button variant={islamicPractices.charity ? 'default' : 'outline'} onClick={() => toggleIslamicPractice('charity')}>{t('mood.practices.charity')}</Button>
+                    {userData.settings.islamicFeatures && (
+                        <div className="space-y-3">
+                            <Label className="text-base font-medium flex items-center gap-2">
+                                <Star className="w-5 h-5 text-amber-500" /> {t('mood.islamicPracticesTitle')}
+                            </Label>
+                            <div className="flex flex-wrap gap-2">
+                                <Button variant={islamicPractices.prayer ? 'default' : 'outline'} onClick={() => toggleIslamicPractice('prayer')}>{t('mood.practices.prayer')}</Button>
+                                <Button variant={islamicPractices.quran ? 'default' : 'outline'} onClick={() => toggleIslamicPractice('quran')}>{t('mood.practices.quran')}</Button>
+                                <Button variant={islamicPractices.dhikr ? 'default' : 'outline'} onClick={() => toggleIslamicPractice('dhikr')}>{t('mood.practices.dhikr')}</Button>
+                                <Button variant={islamicPractices.charity ? 'default' : 'outline'} onClick={() => toggleIslamicPractice('charity')}>{t('mood.practices.charity')}</Button>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Gratitude */}
                     <div className="space-y-3">

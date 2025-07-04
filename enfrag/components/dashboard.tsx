@@ -13,7 +13,8 @@ import {
     Sun,
     LogOut,
     Sparkles,
-    Languages
+    Languages,
+    Github
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -36,6 +37,7 @@ import { MoodEntryDetail } from '@/components/views/mood-entry-detail';
 import { JournalView as JournalViewList } from '@/components/views/journal-view-list';
 import { InsightsView } from '@/components/views/insights-view';
 import { SettingsView } from '@/components/views/settings-view';
+import Link from 'next/link';
 
 interface DashboardProps {
     user: User;
@@ -51,7 +53,7 @@ type ActiveTab = 'dashboard' | 'mood' | 'journal' | 'insights' | 'settings';
 export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser, currentPin }: DashboardProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    
+
     // Get initial tab from URL params, default to 'dashboard'
     const getActiveTabFromUrl = (): ActiveTab => {
         const tab = searchParams.get('tab');
@@ -60,7 +62,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
     };
 
     const [activeTab, setActiveTab] = useState<ActiveTab>(getActiveTabFromUrl());
-    
+
     // Update URL when tab changes
     const handleTabChange = (newTab: ActiveTab) => {
         setActiveTab(newTab);
@@ -76,7 +78,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
 
         // Update tab when URL changes (back/forward buttons)
         window.addEventListener('popstate', handleUrlChange);
-        
+
         // Update initial tab if URL changes
         handleUrlChange();
 
@@ -278,6 +280,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
                 if (showMoodTracker) {
                     return (
                         <MoodTracker
+                            userData={userData}
                             onSave={handleSaveMoodEntry}
                             onCancel={() => setShowMoodTracker(false)}
                         />
@@ -348,6 +351,8 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
                 return (
                     <SettingsView
                         user={user}
+                        userData={userData}
+                        onUpdateData={onUpdateData}
                         onChangeUsername={() => {
                             setNewUsername(user.username);
                             setShowEditUsername(true);
@@ -363,7 +368,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
     return (
         <SidebarProvider>
             <div className="flex h-screen w-full bg-background" dir={i18n.dir()}>
-                <Sidebar side={i18n.language === 'ar' ? 'right' : 'left'}>
+                <Sidebar side={i18n.language === 'ar' ? 'right' : 'left'} >
                     <SidebarHeader>
                         <div className="flex items-center gap-2">
                             <Sparkles className="w-8 h-8 text-green-500" />
@@ -387,33 +392,36 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
                     </SidebarContent>
                     <SidebarFooter>
                         <div className="flex flex-col gap-2">
-                            <div className="flex items-center justify-around p-2 rounded-md bg-muted">
-                                {
-                                    theme == 'dark' ? (
-                                        <Button variant="ghost" size="icon" onClick={() => setTheme('light')} >
-                                            <Sun className="w-5 h-5" />
-                                        </Button>
-                                    ) : (
-                                        <Button variant="ghost" size="icon" onClick={() => setTheme('dark')}>
-                                            <Moon className="w-5 h-5" />
-                                        </Button>
-                                    )
-                                }
+                            <div className='flex items-center justify-center gap-2 p-2 '>
+                                <Link href="https://github.com/mohamedelhefni/sakena" target="_blank" rel="noopener noreferrer">
+                                    <Github className="w-5 h-5" />
+                                </Link>
                             </div>
-                            <div className="flex items-center justify-around p-2 rounded-md bg-muted">
+                            {/* <div className="flex items-center gap-3 justify-start p-2  rounded-md">
                                 {
                                     i18n.language == 'ar' ? (
-                                        <Button variant="ghost" size="icon" onClick={() => changeLanguage('en')} >
+                                        <Button variant="outline" size="icon" onClick={() => changeLanguage('en')} >
                                             EN
                                         </Button>
                                     ) : (
-                                        <Button variant="ghost" size="icon" onClick={() => changeLanguage('ar')} >
+                                        <Button variant="outline" size="icon" onClick={() => changeLanguage('ar')} >
                                             ع
                                         </Button>
                                     )
                                 }
 
-                            </div>
+                                {
+                                    theme == 'dark' ? (
+                                        <Button variant="outline" size="icon" onClick={() => setTheme('light')} >
+                                            <Sun className="w-5 h-5" />
+                                        </Button>
+                                    ) : (
+                                        <Button variant="outline" size="icon" onClick={() => setTheme('dark')}>
+                                            <Moon className="w-5 h-5" />
+                                        </Button>
+                                    )
+                                }
+                            </div> */}
                             <Button variant="outline" onClick={onLogout}>
                                 <LogOut className="w-5 h-5 mr-2" />
                                 {t('nav.logout')}
