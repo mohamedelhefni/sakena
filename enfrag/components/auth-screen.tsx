@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { SecureStorage, EncryptionService } from '@/lib/encryption';
+import { SecureIndexedDBStorage } from '@/lib/secure-indexeddb';
+import { EncryptionService } from '@/lib/encryption';
 import { User } from '@/lib/types';
 
 interface AuthProps {
@@ -21,11 +22,14 @@ export function AuthScreen({ onAuthenticated }: AuthProps) {
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        const existingUser = SecureStorage.getUserProfile();
-        if (existingUser) {
-            setUsername(existingUser);
-            setIsLogin(true);
-        }
+        const loadExistingUser = async () => {
+            const existingUser = await SecureIndexedDBStorage.getUserProfile();
+            if (existingUser) {
+                setUsername(existingUser);
+                setIsLogin(true);
+            }
+        };
+        loadExistingUser();
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -48,7 +52,7 @@ export function AuthScreen({ onAuthenticated }: AuthProps) {
         try {
             if (isLogin) {
                 // Try to load existing data
-                const userData = SecureStorage.loadUserData(pin);
+                const userData = await SecureIndexedDBStorage.loadUserData(pin, username);
                 if (userData) {
                     onAuthenticated(userData.user, pin);
                 } else {
@@ -73,8 +77,8 @@ export function AuthScreen({ onAuthenticated }: AuthProps) {
                     },
                 };
 
-                if (SecureStorage.saveUserData(userData, pin)) {
-                    SecureStorage.saveUserProfile(username.trim());
+                if (await SecureIndexedDBStorage.saveUserData(userData, pin)) {
+                    await SecureIndexedDBStorage.saveUserProfile(username.trim());
                     onAuthenticated(newUser, pin);
                 } else {
                     setError(t('auth.accountCreationFailed'));

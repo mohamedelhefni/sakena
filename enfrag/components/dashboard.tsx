@@ -579,7 +579,11 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                                                             />
                                                             <div className="flex items-center gap-2">
                                                                 <span className="text-xs text-muted-foreground">
-                                                                    {entry.date.toLocaleDateString('en-US', { hour12: true })}
+                                                                    {format(
+                                                                        typeof entry.date === 'string' ? new Date(entry.date) : entry.date,
+                                                                        'PPp',
+                                                                        { locale: i18n.language === 'ar' ? arSA : enUS }
+                                                                    )}
                                                                 </span>
                                                             </div>
                                                         </div>
