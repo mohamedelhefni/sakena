@@ -19,10 +19,17 @@ export class SecureIndexedDBStorage {
         }
     }
 
+    private static isEncrypted(data: string): boolean {
+        // Check if the string looks like encrypted data (base64 with specific patterns)
+        // AES encrypted data typically starts with "U2FsdGVk" (base64 for "Salted")
+        return data.includes('U2FsdGVk') ||
+            (data.length > 20 && /^[A-Za-z0-9+/]+=*$/.test(data) && data.length % 4 === 0);
+    }
+
     static async saveUserData(userData: any, pin: string): Promise<boolean> {
         try {
             await indexedDBStorage.init();
-            
+
             // Save basic user data with encryption for sensitive information
             const basicUserData = {
                 user: userData.user,
@@ -39,28 +46,30 @@ export class SecureIndexedDBStorage {
             };
 
             await indexedDBStorage.saveUserData(userData.user.username, basicUserData);
-            
+
             // Save individual entries for better performance
             const moodEntries = userData.moodEntries || [];
             const journalEntries = userData.journalEntries || [];
-            
+
             for (const entry of moodEntries) {
                 // Encrypt sensitive mood data
+                const encryptedEntry = { ...entry };
                 if (entry.notes) {
-                    entry.notes = this.encrypt(entry.notes, pin);
+                    encryptedEntry.notes = this.encrypt(entry.notes, pin);
                 }
-                await indexedDBStorage.saveMoodEntry(userData.user.username, entry);
+                await indexedDBStorage.saveMoodEntry(userData.user.username, encryptedEntry);
             }
-            
+
             for (const entry of journalEntries) {
                 // Encrypt journal content
+                const encryptedEntry = { ...entry };
                 if (entry.content) {
-                    entry.content = this.encrypt(entry.content, pin);
+                    encryptedEntry.content = this.encrypt(entry.content, pin);
                 }
                 if (entry.title && entry.isPrivate) {
-                    entry.title = this.encrypt(entry.title, pin);
+                    encryptedEntry.title = this.encrypt(entry.title, pin);
                 }
-                await indexedDBStorage.saveJournalEntry(userData.user.username, entry);
+                await indexedDBStorage.saveJournalEntry(userData.user.username, encryptedEntry);
             }
 
             return true;
@@ -73,7 +82,7 @@ export class SecureIndexedDBStorage {
     static async loadUserData(pin: string, username: string): Promise<any | null> {
         try {
             await indexedDBStorage.init();
-            
+
             const userData = await indexedDBStorage.getUserData(username);
             if (!userData) return null;
 
@@ -99,34 +108,40 @@ export class SecureIndexedDBStorage {
 
             // Decrypt mood entries
             const decryptedMoodEntries = moodEntries.map(entry => {
-                if (entry.notes && typeof entry.notes === 'string' && entry.notes.includes('U2FsdGVk')) {
+                const decryptedEntry = { ...entry };
+                if (entry.notes && typeof entry.notes === 'string' && this.isEncrypted(entry.notes)) {
                     try {
-                        entry.notes = this.decrypt(entry.notes, pin);
+                        decryptedEntry.notes = this.decrypt(entry.notes, pin);
                     } catch (e) {
-                        console.warn('Could not decrypt mood notes');
+                        console.warn('Could not decrypt mood notes, keeping original');
+                        // Keep the original encrypted text to prevent data loss
+                        decryptedEntry.notes = '[Encrypted - Please re-enter PIN]';
                     }
                 }
-                return entry;
+                return decryptedEntry;
             });
 
             // Decrypt journal entries
             const decryptedJournalEntries = journalEntries.map(entry => {
-                if (entry.content && typeof entry.content === 'string' && entry.content.includes('U2FsdGVk')) {
+                const decryptedEntry = { ...entry };
+                if (entry.content && typeof entry.content === 'string' && this.isEncrypted(entry.content)) {
                     try {
-                        entry.content = this.decrypt(entry.content, pin);
+                        decryptedEntry.content = this.decrypt(entry.content, pin);
                     } catch (e) {
-                        console.warn('Could not decrypt journal content');
+                        console.warn('Could not decrypt journal content, keeping original');
+                        decryptedEntry.content = '[Encrypted content - Please re-enter PIN to view]';
                     }
                 }
-                
-                if (entry.title && entry.isPrivate && typeof entry.title === 'string' && entry.title.includes('U2FsdGVk')) {
+
+                if (entry.title && entry.isPrivate && typeof entry.title === 'string' && this.isEncrypted(entry.title)) {
                     try {
-                        entry.title = this.decrypt(entry.title, pin);
+                        decryptedEntry.title = this.decrypt(entry.title, pin);
                     } catch (e) {
-                        console.warn('Could not decrypt journal title');
+                        console.warn('Could not decrypt journal title, keeping original');
+                        decryptedEntry.title = '[Encrypted title]';
                     }
                 }
-                return entry;
+                return decryptedEntry;
             });
 
             return {
@@ -161,31 +176,17 @@ export class SecureIndexedDBStorage {
     static async getUserProfile(): Promise<string | null> {
         try {
             await indexedDBStorage.init();
-            
+
             // First try to get the profiles from IndexedDB
             const userProfiles = await indexedDBStorage.getAllUserProfiles();
             if (userProfiles && userProfiles.length > 0) {
                 // Return the most recently created profile
-                const sortedProfiles = userProfiles.sort((a: any, b: any) => 
+                const sortedProfiles = userProfiles.sort((a: any, b: any) =>
                     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
                 );
                 return sortedProfiles[0].username;
             }
-            
-            // Fall back to localStorage for backward compatibility
-            const legacyProfile = localStorage.getItem('mood_tracker_user');
-            if (legacyProfile) {
-                try {
-                    const parsed = JSON.parse(legacyProfile);
-                    // Migrate this profile to IndexedDB
-                    await this.saveUserProfile(parsed.username);
-                    return parsed.username;
-                } catch (e) {
-                    console.error('Error parsing legacy profile', e);
-                    return legacyProfile; // Try to use the raw value if parsing fails
-                }
-            }
-            
+
             return null;
         } catch (error) {
             console.error('Error getting user profile:', error);
@@ -196,13 +197,13 @@ export class SecureIndexedDBStorage {
     static async saveSession(pin: string): Promise<void> {
         try {
             await indexedDBStorage.init();
-            
+
             const sessionData = {
-                id: 'current_session',
+                id: 'current',
                 pin: this.encrypt(pin, 'session_key'),
                 timestamp: Date.now()
             };
-            
+
             await indexedDBStorage.saveSession(sessionData);
         } catch (error) {
             console.error('Error saving session:', error);
@@ -212,13 +213,11 @@ export class SecureIndexedDBStorage {
     static async getValidSession(): Promise<string | null> {
         try {
             await indexedDBStorage.init();
-            
-            const session = await indexedDBStorage.getSession('current_session');
+
+            const session = await indexedDBStorage.getSession('current');
             if (!session) return null;
 
-            const now = Date.now();
-            if (now - session.timestamp > this.SESSION_TIMEOUT) {
-                await indexedDBStorage.deleteEntry('sessions', 'current_session');
+            if (Date.now() - session.timestamp > this.SESSION_TIMEOUT) {
                 return null;
             }
 
@@ -232,7 +231,7 @@ export class SecureIndexedDBStorage {
     static async clearSession(): Promise<void> {
         try {
             await indexedDBStorage.init();
-            await indexedDBStorage.deleteEntry('sessions', 'current_session');
+            await indexedDBStorage.deleteEntry('sessions', 'current');
         } catch (error) {
             console.error('Error clearing session:', error);
         }
@@ -242,127 +241,31 @@ export class SecureIndexedDBStorage {
         try {
             await indexedDBStorage.init();
             await indexedDBStorage.clearAllData();
-            
-            // Also clear localStorage for complete cleanup
-            localStorage.removeItem('mood_tracker_data');
-            localStorage.removeItem('mood_tracker_user');
-            localStorage.removeItem('mood_tracker_session_pin');
-            localStorage.removeItem('mood_tracker_session_timestamp');
         } catch (error) {
             console.error('Error clearing all data:', error);
         }
     }
 
-    static async getStorageInfo(): Promise<{ 
-        usage: number; 
-        quota: number; 
-        usagePercentage: number;
-        formattedUsage: string;
-        formattedQuota: string;
-    }> {
+    // Delete specific entries
+    static async deleteMoodEntry(username: string, entryId: string): Promise<boolean> {
         try {
             await indexedDBStorage.init();
-            const stats = await indexedDBStorage.getStorageStats();
-            
-            const usagePercentage = stats.quota > 0 ? (stats.estimatedUsage / stats.quota) * 100 : 0;
-            
-            return {
-                usage: stats.estimatedUsage,
-                quota: stats.quota,
-                usagePercentage,
-                formattedUsage: this.formatBytes(stats.estimatedUsage),
-                formattedQuota: this.formatBytes(stats.quota)
-            };
+            await indexedDBStorage.deleteEntry('moodEntries', entryId);
+            return true;
         } catch (error) {
-            console.error('Error getting storage info:', error);
-            return {
-                usage: 0,
-                quota: 0,
-                usagePercentage: 0,
-                formattedUsage: '0 B',
-                formattedQuota: '0 B'
-            };
+            console.error('Error deleting mood entry:', error);
+            return false;
         }
     }
 
-    private static formatBytes(bytes: number): string {
-        if (bytes === 0) return '0 B';
-        
-        const k = 1024;
-        const sizes = ['B', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-
-    // Migration method to move data from localStorage to IndexedDB
-    static async migrateFromLocalStorage(): Promise<boolean> {
+    static async deleteJournalEntry(username: string, entryId: string): Promise<boolean> {
         try {
-            const legacyData = localStorage.getItem('mood_tracker_data');
-            const legacyUser = localStorage.getItem('mood_tracker_user');
-            
-            if (!legacyData || !legacyUser) return false;
-            
-            // Try to parse the data - it might be encrypted
-            let userData;
-            let userProfile;
-            
-            try {
-                userData = JSON.parse(legacyData);
-                
-                // If it's an encrypted object, we need the session pin
-                if (userData.encrypted && userData.iv) {
-                    const sessionPin = localStorage.getItem('mood_tracker_session_pin');
-                    if (sessionPin) {
-                        // Try to decrypt the data with the session pin
-                        const { encrypted, iv } = userData;
-                        const decrypted = EncryptionService.decrypt({ encrypted, iv }, sessionPin);
-                        if (decrypted) {
-                            userData = JSON.parse(decrypted);
-                        } else {
-                            console.error('Could not decrypt localStorage data during migration');
-                            return false;
-                        }
-                    } else {
-                        console.error('No session pin found for encrypted data');
-                        return false;
-                    }
-                }
-            } catch (e) {
-                console.error('Error parsing legacy data:', e);
-                return false;
-            }
-            
-            try {
-                userProfile = JSON.parse(legacyUser);
-            } catch (e) {
-                // If parsing fails, try using it as a string
-                userProfile = { username: legacyUser };
-            }
-            
-            // Save user profile to IndexedDB
-            await this.saveUserProfile(userProfile.username);
-            
-            // For migration, we'll use the session pin if it exists
-            const sessionPin = localStorage.getItem('mood_tracker_session_pin');
-            if (!sessionPin) {
-                console.error('No session pin found for migration');
-                return false;
-            }
-            
-            // Save user data with proper encryption
-            await this.saveUserData(userData, sessionPin);
-            
-            // Save the session
-            await this.saveSession(sessionPin);
-            
-            console.log('Successfully migrated data from localStorage to IndexedDB');
+            await indexedDBStorage.init();
+            await indexedDBStorage.deleteEntry('journalEntries', entryId);
             return true;
         } catch (error) {
-            console.error('Error migrating from localStorage:', error);
+            console.error('Error deleting journal entry:', error);
             return false;
         }
     }
 }
-
-export default SecureIndexedDBStorage;

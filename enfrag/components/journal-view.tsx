@@ -6,15 +6,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, Heart, Lock, Globe } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
+import { format } from 'date-fns';
+import { arSA, enUS } from 'date-fns/locale';
 
 interface JournalViewProps {
     entry: JournalEntry;
     onEdit: () => void;
     onBack: () => void;
+    onDelete?: () => void;
 }
 
-export function JournalView({ entry, onEdit, onBack }: JournalViewProps) {
-    const { t } = useTranslation();
+export function JournalView({ entry, onEdit, onBack, onDelete }: JournalViewProps) {
+    const { t, i18n } = useTranslation();
+    const locale = i18n.language === 'ar' ? arSA : enUS;
+
+    // Helper function to format date safely
+    const formatDate = (date: Date | string) => {
+        const dateObj = typeof date === 'string' ? new Date(date) : date;
+        if (isNaN(dateObj.getTime())) {
+            return 'Invalid Date';
+        }
+        
+        return format(dateObj, 'PPP', { locale });
+    };
 
     return (
         <Card>
@@ -26,7 +40,7 @@ export function JournalView({ entry, onEdit, onBack }: JournalViewProps) {
                             {entry.title || t('journal.untitled')}
                         </CardTitle>
                         <CardDescription className="flex items-center gap-2 mt-2">
-                            <span>{entry.date}</span>
+                            <span>{formatDate(entry.date)}</span>
                             {entry.isPrivate ? (
                                 <Lock className="w-4 h-4 text-red-500" />
                             ) : (
@@ -44,6 +58,11 @@ export function JournalView({ entry, onEdit, onBack }: JournalViewProps) {
                         <Button variant="outline" onClick={onEdit}>
                             {t('journal.editEntry')}
                         </Button>
+                        {onDelete && (
+                            <Button variant="destructive" onClick={onDelete}>
+                                {t('common.delete')}
+                            </Button>
+                        )}
                         <Button variant="outline" onClick={onBack}>
                             {t('common.back')}
                         </Button>

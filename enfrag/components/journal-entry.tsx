@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { BookOpen, Save, X, Lock, Globe, Heart } from 'lucide-react';
 import { JournalEntry, MoodLevel } from '@/lib/types';
 import { format } from 'date-fns';
+import { arSA, enUS } from 'date-fns/locale';
 import { TiptapEditor } from '@/components/tiptap-editor';
 import { MoodSelector } from '@/components/mood-selector';
 
@@ -17,19 +18,30 @@ interface JournalEntryProps {
 }
 
 export function JournalEntryComponent({ onSave, onCancel, existingEntry }: JournalEntryProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [title, setTitle] = useState(existingEntry?.title || '');
     const [content, setContent] = useState(existingEntry?.content || '');
     const [mood, setMood] = useState<MoodLevel | undefined>(existingEntry?.mood);
     const [emotions, setEmotions] = useState<string[]>(existingEntry?.emotions || []);
     const [isPrivate, setIsPrivate] = useState(existingEntry?.isPrivate || false);
+    const locale = i18n.language === 'ar' ? arSA : enUS;
+
+    // Helper function to format date safely
+    const formatDate = (date: Date | string) => {
+        const dateObj = typeof date === 'string' ? new Date(date) : date;
+        if (isNaN(dateObj.getTime())) {
+            return 'Invalid Date';
+        }
+        
+        return format(dateObj, 'PPP', { locale });
+    };
 
     const handleSave = () => {
         if (!content.trim() && !title.trim()) return;
 
         const entry: JournalEntry = {
             id: existingEntry?.id || Date.now().toString(),
-            date: existingEntry?.date || format(new Date(), 'yyyy-MM-dd'),
+            date: existingEntry?.date || new Date(),
             title: title.trim() || undefined,
             content: content.trim(),
             mood,
@@ -52,7 +64,7 @@ export function JournalEntryComponent({ onSave, onCancel, existingEntry }: Journ
                                 {existingEntry ? t('journal.editEntry') : t('journal.newEntry')}
                             </h1>
                             <p className="text-sm text-muted-foreground">
-                                {existingEntry ? existingEntry.date : format(new Date(), 'yyyy-MM-dd')}
+                                {existingEntry ? formatDate(existingEntry.date) : format(new Date(), 'PPP', { locale })}
                             </p>
                         </div>
                     </div>

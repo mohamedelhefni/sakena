@@ -5,8 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { EncryptionService } from '@/lib/encryption';
-import { SecureIndexedDBStorage } from '@/lib/secure-indexeddb';
+import { SecureStorage, EncryptionService } from '@/lib/encryption';
 import { User } from '@/lib/types';
 
 interface AuthProps {
@@ -22,15 +21,11 @@ export function AuthScreen({ onAuthenticated }: AuthProps) {
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        async function checkExistingUser() {
-            const existingUser = await SecureIndexedDBStorage.getUserProfile();
-            if (existingUser) {
-                setUsername(existingUser);
-                setIsLogin(true);
-            }
+        const existingUser = SecureStorage.getUserProfile();
+        if (existingUser) {
+            setUsername(existingUser);
+            setIsLogin(true);
         }
-        
-        checkExistingUser();
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -53,7 +48,7 @@ export function AuthScreen({ onAuthenticated }: AuthProps) {
         try {
             if (isLogin) {
                 // Try to load existing data
-                const userData = await SecureIndexedDBStorage.loadUserData(pin, username);
+                const userData = SecureStorage.loadUserData(pin);
                 if (userData) {
                     onAuthenticated(userData.user, pin);
                 } else {
@@ -78,17 +73,14 @@ export function AuthScreen({ onAuthenticated }: AuthProps) {
                     },
                 };
 
-                // Save the user data using IndexedDB
-                const saved = await SecureIndexedDBStorage.saveUserData(userData, pin);
-                if (saved) {
-                    await SecureIndexedDBStorage.saveUserProfile(username.trim());
+                if (SecureStorage.saveUserData(userData, pin)) {
+                    SecureStorage.saveUserProfile(username.trim());
                     onAuthenticated(newUser, pin);
                 } else {
                     setError(t('auth.accountCreationFailed'));
                 }
             }
         } catch (error) {
-            console.error('Auth error:', error);
             setError(t('auth.unexpectedError'));
         } finally {
             setIsLoading(false);
@@ -105,7 +97,7 @@ export function AuthScreen({ onAuthenticated }: AuthProps) {
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 p-4">
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center">
-                    <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mb-4">
+                    <div className="mx-auto w-16 h-16 bg-gradient-to-br from-white-400 to-green-600 rounded-full flex items-center justify-center mb-4">
                         <span className="text-2xl">🌱</span>
                     </div>
                     <CardTitle className="text-2xl font-bold">

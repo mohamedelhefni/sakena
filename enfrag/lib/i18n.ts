@@ -184,6 +184,7 @@ const resources = {
                 save: 'حفظ',
                 cancel: 'إلغاء',
                 back: 'رجوع',
+                delete: 'حذف',
             },
         }
     },
@@ -355,6 +356,7 @@ const resources = {
                 save: 'Save',
                 cancel: 'Cancel',
                 back: 'Back',
+                delete: 'Delete',
             },
         }
     }

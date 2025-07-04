@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { AuthScreen } from '@/components/auth-screen';
 import { Dashboard } from '@/components/dashboard';
-import { SecureIndexedDBStorage } from '@/lib/secure-indexeddb';
+import { SecureStorage } from '@/lib/encryption';
 import { User, UserData } from '@/lib/types';
 
 export default function Home() {
@@ -14,47 +14,38 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      setIsLoading(true);
-      
-      // First, try to migrate data from localStorage if needed
-      await SecureIndexedDBStorage.migrateFromLocalStorage();
-      
-      // Then check for existing session
-      const existingUser = await SecureIndexedDBStorage.getUserProfile();
-      const validSession = await SecureIndexedDBStorage.getValidSession();
+    // Check for existing session first
+    const existingUser = SecureStorage.getUserProfile();
+    const validSession = SecureStorage.getValidSession();
 
-      if (existingUser && validSession) {
-        // Try to load user data with the session PIN
-        const loadedData = await SecureIndexedDBStorage.loadUserData(validSession, existingUser);
-        if (loadedData) {
-          const user: User = {
-            username: existingUser,
-            language: 'ar',
-            theme: 'system',
-          };
-          setUser(user);
-          setCurrentPin(validSession);
-          setUserData(loadedData);
-          setIsAuthenticated(true);
-        }
+    if (existingUser && validSession) {
+      // Try to load user data with the session PIN
+      const loadedData = SecureStorage.loadUserData(validSession);
+      if (loadedData) {
+        const user: User = {
+          username: existingUser,
+          language: 'ar',
+          theme: 'system',
+        };
+        setUser(user);
+        setCurrentPin(validSession);
+        setUserData(loadedData);
+        setIsAuthenticated(true);
       }
+    }
 
-      setIsLoading(false);
-    };
-
-    initializeAuth();
+    setIsLoading(false);
   }, []);
 
-  const handleAuthenticated = async (authenticatedUser: User, pin: string) => {
+  const handleAuthenticated = (authenticatedUser: User, pin: string) => {
     setUser(authenticatedUser);
     setCurrentPin(pin);
 
     // Save session for auto-login
-    await SecureIndexedDBStorage.saveSession(pin);
+    SecureStorage.saveSession(pin);
 
     // Load user data
-    const loadedData = await SecureIndexedDBStorage.loadUserData(pin, authenticatedUser.username);
+    const loadedData = SecureStorage.loadUserData(pin);
     if (loadedData) {
       setUserData(loadedData);
     } else {
@@ -75,17 +66,17 @@ export default function Home() {
     setIsAuthenticated(true);
   };
 
-  const handleLogout = async () => {
-    await SecureIndexedDBStorage.clearSession();
+  const handleLogout = () => {
+    SecureStorage.clearSession();
     setIsAuthenticated(false);
     setUser(null);
     setUserData(null);
     setCurrentPin('');
   };
 
-  const handleUpdateData = async (newData: UserData) => {
+  const handleUpdateData = (newData: UserData) => {
     setUserData(newData);
-    await SecureIndexedDBStorage.saveUserData(newData, currentPin);
+    SecureStorage.saveUserData(newData, currentPin);
   };
 
   if (isLoading) {

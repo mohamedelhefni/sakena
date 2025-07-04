@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { AuthScreen } from '@/components/auth-screen';
 import { Dashboard } from '@/components/dashboard';
-import { SecureStorage } from '@/lib/encryption';
+import { SecureIndexedDBStorage } from '@/lib/secure-indexeddb';
 import { User, UserData } from '@/lib/types';
 
 export default function Home() {
@@ -15,21 +15,24 @@ export default function Home() {
 
     useEffect(() => {
         // Check if user is already logged in (this is just UI state, data is still encrypted)
-        const existingUser = SecureStorage.getUserProfile();
-        if (existingUser) {
-            // User exists but still need PIN to decrypt data
-            setIsLoading(false);
-        } else {
-            setIsLoading(false);
-        }
+        const checkUser = async () => {
+            const existingUser = await SecureIndexedDBStorage.getUserProfile();
+            if (existingUser) {
+                // User exists but still need PIN to decrypt data
+                setIsLoading(false);
+            } else {
+                setIsLoading(false);
+            }
+        };
+        checkUser();
     }, []);
 
-    const handleAuthenticated = (authenticatedUser: User, pin: string) => {
+    const handleAuthenticated = async (authenticatedUser: User, pin: string) => {
         setUser(authenticatedUser);
         setCurrentPin(pin);
 
         // Load user data
-        const loadedData = SecureStorage.loadUserData(pin);
+        const loadedData = await SecureIndexedDBStorage.loadUserData(pin, authenticatedUser.username);
         if (loadedData) {
             setUserData(loadedData);
         } else {
@@ -57,9 +60,9 @@ export default function Home() {
         setCurrentPin('');
     };
 
-    const handleUpdateData = (newData: UserData) => {
+    const handleUpdateData = async (newData: UserData) => {
         setUserData(newData);
-        SecureStorage.saveUserData(newData, currentPin);
+        await SecureIndexedDBStorage.saveUserData(newData, currentPin);
     };
 
     if (isLoading) {

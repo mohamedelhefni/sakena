@@ -66,9 +66,12 @@ export function MoodTracker({ onSave, onCancel }: MoodTrackerProps) {
     };
 
     const handleSave = () => {
+        const now = new Date();
         const entry: MoodEntry = {
             id: Date.now().toString(),
-            date: format(new Date(), 'yyyy-MM-dd'),
+            date: now,
+            time: format(now, 'HH:mm'),
+            hour: now.getHours(),
             mood,
             emotions: selectedEmotions,
             energy,

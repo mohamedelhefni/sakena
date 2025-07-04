@@ -17,13 +17,17 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { MoodTracker } from '@/components/mood-tracker';
 import { JournalEntryComponent } from '@/components/journal-entry';
 import { JournalView } from '@/components/journal-view';
 import { MoodEntry, JournalEntry, User, UserData, ISLAMIC_QUOTES } from '@/lib/types';
+import { SecureIndexedDBStorage } from '@/lib/secure-indexeddb';
 import { useTheme } from 'next-themes';
-import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarTrigger } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { format } from 'date-fns';
+import { arSA, enUS } from 'date-fns/locale';
 
 interface DashboardProps {
     user: User;
@@ -42,9 +46,22 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
     const [viewJournalEntry, setViewJournalEntry] = useState<JournalEntry | null>(null);
     const [editJournalEntry, setEditJournalEntry] = useState<JournalEntry | null>(null);
     const [journalEntries, setJournalEntries] = useState(userData.journalEntries || []);
+    const [confirmDeleteMood, setConfirmDeleteMood] = useState<string | null>(null);
+    const [confirmDeleteJournal, setConfirmDeleteJournal] = useState<string | null>(null);
     const { theme, setTheme } = useTheme();
     const { t, i18n } = useTranslation();
     const isMobile = useIsMobile();
+    const locale = i18n.language === 'ar' ? arSA : enUS;
+
+    // Helper function to format date safely
+    const formatDate = (date: Date | string) => {
+        const dateObj = typeof date === 'string' ? new Date(date) : date;
+        if (isNaN(dateObj.getTime())) {
+            return 'Invalid Date';
+        }
+        
+        return format(dateObj, 'PPP p', { locale });
+    };
 
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
@@ -69,6 +86,45 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
 
     const handleBackFromMoodView = () => {
         setViewMoodEntry(null);
+    };
+
+    const handleDeleteMoodEntry = async (entryId: string) => {
+        const updatedMoodEntries = userData.moodEntries.filter(e => e.id !== entryId);
+        const updatedData = {
+            ...userData,
+            moodEntries: updatedMoodEntries
+        };
+        onUpdateData(updatedData);
+
+        // Also delete from secure storage
+        try {
+            await SecureIndexedDBStorage.deleteMoodEntry(user.username, entryId);
+        } catch (error) {
+            console.error('Failed to delete mood entry from storage:', error);
+        }
+
+        setViewMoodEntry(null);
+        setConfirmDeleteMood(null);
+    };
+
+    const handleDeleteJournalEntry = async (entryId: string) => {
+        const updatedJournalEntries = userData.journalEntries.filter(e => e.id !== entryId);
+        const updatedData = {
+            ...userData,
+            journalEntries: updatedJournalEntries
+        };
+        onUpdateData(updatedData);
+        setJournalEntries(updatedJournalEntries);
+
+        // Also delete from secure storage
+        try {
+            await SecureIndexedDBStorage.deleteJournalEntry(user.username, entryId);
+        } catch (error) {
+            console.error('Failed to delete journal entry from storage:', error);
+        }
+
+        setViewJournalEntry(null);
+        setConfirmDeleteJournal(null);
     };
 
     const handleSaveJournalEntry = (entry: JournalEntry) => {
@@ -259,11 +315,16 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <CardTitle>{t('mood.viewEntry')}</CardTitle>
-                                        <CardDescription>{viewMoodEntry.date}</CardDescription>
+                                        <CardDescription>{formatDate(viewMoodEntry.date)} {viewMoodEntry.time && `- ${viewMoodEntry.time}`}</CardDescription>
                                     </div>
-                                    <Button variant="outline" onClick={handleBackFromMoodView}>
-                                        {t('common.back')}
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button variant="destructive" onClick={() => setConfirmDeleteMood(viewMoodEntry.id)}>
+                                            {t('common.delete')}
+                                        </Button>
+                                        <Button variant="outline" onClick={handleBackFromMoodView}>
+                                            {t('common.back')}
+                                        </Button>
+                                    </div>
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-6">
@@ -388,7 +449,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                                                 >
                                                     <div className="flex items-center gap-4">
                                                         <div>
-                                                            <p className="font-medium">{entry.date}</p>
+                                                            <p className="font-medium">{entry.date.toLocaleString()} </p>
                                                             <p className="text-sm text-muted-foreground">
                                                                 {t(`mood.levels.${entry.mood}`)}
                                                             </p>
@@ -436,6 +497,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                             entry={viewJournalEntry}
                             onEdit={() => handleEditJournalEntry(viewJournalEntry)}
                             onBack={handleBackFromJournalView}
+                            onDelete={() => setConfirmDeleteJournal(viewJournalEntry.id)}
                         />
                     );
                 }
@@ -517,7 +579,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                                                             />
                                                             <div className="flex items-center gap-2">
                                                                 <span className="text-xs text-muted-foreground">
-                                                                    {entry.date}
+                                                                    {entry.date.toLocaleDateString('en-US', { hour12: true })}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -776,19 +838,61 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                     </SidebarFooter>
                 </Sidebar>
 
-                <SidebarInset>
-                    <main className="flex-1 p-4 md:p-6  ">
-                        {isMobile && (
-                            <div className="mb-4">
-                                <SidebarTrigger />
-                            </div>
-                        )}
-                        <div className="w-full max-w-none">
-                            {renderContent()}
+                {/* Main Content */}
+                <main className="flex-1 overflow-y-auto p-6  ">
+                    {isMobile && (
+                        <div className="mb-4">
+                            <SidebarTrigger />
                         </div>
-                    </main>
-                </SidebarInset>
+                    )}
+                    {renderContent()}
+                </main>
             </div>
+
+            {/* Delete Confirmation Dialogs */}
+            <Dialog open={!!confirmDeleteMood} onOpenChange={() => setConfirmDeleteMood(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t('common.confirmDelete')}</DialogTitle>
+                        <DialogDescription>
+                            {t('mood.deleteConfirmation')}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setConfirmDeleteMood(null)}>
+                            {t('common.cancel')}
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => confirmDeleteMood && handleDeleteMoodEntry(confirmDeleteMood)}
+                        >
+                            {t('common.delete')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!confirmDeleteJournal} onOpenChange={() => setConfirmDeleteJournal(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t('common.confirmDelete')}</DialogTitle>
+                        <DialogDescription>
+                            {t('journal.deleteConfirmation')}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setConfirmDeleteJournal(null)}>
+                            {t('common.cancel')}
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => confirmDeleteJournal && handleDeleteJournalEntry(confirmDeleteJournal)}
+                        >
+                            {t('common.delete')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </SidebarProvider>
     );
 }

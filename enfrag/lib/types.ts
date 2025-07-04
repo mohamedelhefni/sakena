@@ -1,6 +1,8 @@
 export interface MoodEntry {
     id: string;
-    date: string;
+    date: Date;
+    time?: string; // HH:MM format for time of day
+    hour?: number; // 0-23 for easier analytics
     mood: MoodLevel;
     emotions: string[];
     energy: number; // 1-5 scale
@@ -18,7 +20,7 @@ export interface MoodEntry {
 
 export interface JournalEntry {
     id: string;
-    date: string;
+    date: Date;
     title?: string;
     content: string;
     mood?: MoodLevel;
