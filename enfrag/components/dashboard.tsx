@@ -15,20 +15,26 @@ import {
     Languages
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { MoodTracker } from '@/components/mood-tracker';
 import { JournalEntryComponent } from '@/components/journal-entry';
 import { JournalView } from '@/components/journal-view';
-import { MoodEntry, JournalEntry, User, UserData, ISLAMIC_QUOTES } from '@/lib/types';
+import { MoodEntry, JournalEntry, User, UserData } from '@/lib/types';
 import { SecureIndexedDBStorage } from '@/lib/secure-indexeddb';
 import { useTheme } from 'next-themes';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarTrigger } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { format } from 'date-fns';
 import { arSA, enUS } from 'date-fns/locale';
+
+// Import the new view components
+import { DashboardOverview } from '@/components/views/dashboard-overview';
+import { MoodView } from '@/components/views/mood-view';
+import { MoodEntryDetail } from '@/components/views/mood-entry-detail';
+import { JournalView as JournalViewList } from '@/components/views/journal-view-list';
+import { InsightsView } from '@/components/views/insights-view';
+import { SettingsView } from '@/components/views/settings-view';
 
 interface DashboardProps {
     user: User;
@@ -103,8 +109,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
         }
     };
 
-    // Get today's Islamic quote
-    const todayQuote = ISLAMIC_QUOTES[new Date().getDate() % ISLAMIC_QUOTES.length];
+    // Get today's Islamic quote - moved to DashboardOverview component
 
     const handleSaveMoodEntry = (entry: MoodEntry) => {
         const updatedData = {
@@ -214,124 +219,16 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
         switch (activeTab) {
             case 'dashboard':
                 return (
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {/* Welcome Card */}
-                            <Card className="col-span-full">
-                                <CardHeader>
-                                    <CardTitle className="text-2xl">
-                                        {t('dashboard.welcome', { username: user.username })}
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {t('dashboard.howFeeling')}
-                                    </CardDescription>
-                                </CardHeader>
-                            </Card>
-
-                            {/* Islamic Quote of the Day */}
-                            <Card className="col-span-full islamic-green text-white">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Sparkles className="w-5 h-5" />
-                                        {t('dashboard.verseOfDay')}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <blockquote className="text-lg mb-4 font-arabic leading-relaxed">
-                                        "{todayQuote.arabic}"
-                                    </blockquote>
-                                    <p className="text-sm opacity-90 mb-2">
-                                        "{todayQuote.translation}"
-                                    </p>
-                                    <p className="text-xs opacity-75">
-                                        - {todayQuote.source}
-                                    </p>
-                                </CardContent>
-                            </Card>
-
-                            {/* Quick Stats */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>{t('dashboard.totalEntries')}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-3xl font-bold">
-                                        {userData.moodEntries.length + userData.journalEntries.length}
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>{t('dashboard.weekMood')}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex items-center gap-2">
-                                        <Heart className="w-6 h-6 text-green-500" />
-                                        <span className="text-lg">{t('mood.levels.good')}</span>
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>{t('dashboard.dailyPractices')}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex flex-wrap gap-2">
-                                        <Badge variant="secondary">{t('practices.prayer')}</Badge>
-                                        <Badge variant="secondary">{t('practices.quran')}</Badge>
-                                        <Badge variant="secondary">{t('practices.dhikr')}</Badge>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        {/* Quick Actions */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{t('dashboard.quickActions')}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <Button
-                                        onClick={() => {
-                                            setActiveTab('mood');
-                                            setShowMoodTracker(true);
-                                        }}
-                                        className="h-20 islamic-green text-white"
-                                    >
-                                        <div className="text-center">
-                                            <Heart className="w-6 h-6 mx-auto mb-2" />
-                                            <div>{t('dashboard.logMood')}</div>
-                                        </div>
-                                    </Button>
-
-                                    <Button
-                                        onClick={() => setActiveTab('journal')}
-                                        variant="outline"
-                                        className="h-20"
-                                    >
-                                        <div className="text-center">
-                                            <BookOpen className="w-6 h-6 mx-auto mb-2" />
-                                            <div>{t('dashboard.writeJournal')}</div>
-                                        </div>
-                                    </Button>
-
-                                    <Button
-                                        onClick={() => setActiveTab('insights')}
-                                        variant="outline"
-                                        className="h-20"
-                                    >
-                                        <div className="text-center">
-                                            <BarChart3 className="w-6 h-6 mx-auto mb-2" />
-                                            <div>{t('dashboard.viewInsights')}</div>
-                                        </div>
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
+                    <DashboardOverview
+                        user={user}
+                        userData={userData}
+                        onNavigateToMood={() => {
+                            setActiveTab('mood');
+                            setShowMoodTracker(true);
+                        }}
+                        onNavigateToJournal={() => setActiveTab('journal')}
+                        onNavigateToInsights={() => setActiveTab('insights')}
+                    />
                 );
 
             case 'mood':
@@ -346,174 +243,21 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
 
                 if (viewMoodEntry) {
                     return (
-                        <Card>
-                            <CardHeader>
-                                <div className="flex items-center justify-between flex-wrap">
-                                    <div>
-                                        <CardTitle>{t('mood.viewEntry')}</CardTitle>
-                                        <CardDescription>{formatDate(viewMoodEntry.date)} {viewMoodEntry.time && `- ${viewMoodEntry.time}`}</CardDescription>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <Button variant="destructive" onClick={() => setConfirmDeleteMood(viewMoodEntry.id)}>
-                                            {t('common.delete')}
-                                        </Button>
-                                        <Button variant="outline" onClick={handleBackFromMoodView}>
-                                            {t('common.back')}
-                                        </Button>
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <h4 className="font-medium mb-2">{t('mood.overallMoodLabel')}</h4>
-                                        <div className="flex items-center gap-2">
-                                            <Heart className="w-5 h-5 text-green-500" />
-                                            <span className="text-lg">{t(`mood.levels.${viewMoodEntry.mood}`)}</span>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h4 className="font-medium mb-2">{t('mood.emotionsLabel')}</h4>
-                                        <div className="flex flex-wrap gap-1">
-                                            {viewMoodEntry.emotions.map(emotion => (
-                                                <Badge key={emotion} variant="secondary">
-                                                    {t(`emotions.${emotion}`)}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h4 className="font-medium mb-2">{t('mood.energyLabel')}</h4>
-                                        <p>{t(`mood.levels.${viewMoodEntry.energy === 1 ? 'very-low' : viewMoodEntry.energy === 2 ? 'low' : viewMoodEntry.energy === 3 ? 'neutral' : viewMoodEntry.energy === 4 ? 'good' : 'excellent'}`)}</p>
-                                    </div>
-
-                                    <div>
-                                        <h4 className="font-medium mb-2">{t('mood.stressLabel')}</h4>
-                                        <p>{t(`mood.levels.${viewMoodEntry.stress === 1 ? 'very-low' : viewMoodEntry.stress === 2 ? 'low' : viewMoodEntry.stress === 3 ? 'neutral' : viewMoodEntry.stress === 4 ? 'high' : 'very-high'}`)}</p>
-                                    </div>
-
-                                    <div>
-                                        <h4 className="font-medium mb-2">{t('mood.sleepLabel')}</h4>
-                                        <p>{t('mood.hours', { count: viewMoodEntry.sleep })}</p>
-                                    </div>
-                                </div>
-
-                                {viewMoodEntry.islamicPractices && (
-                                    <div>
-                                        <h4 className="font-medium mb-2">{t('mood.islamicPracticesLabel')}</h4>
-                                        <div className="flex flex-wrap gap-2">
-                                            {Object.entries(viewMoodEntry.islamicPractices).map(([practice, completed]) => (
-                                                completed && (
-                                                    <Badge key={practice} variant="default">
-                                                        {t(`practices.${practice}`)}
-                                                    </Badge>
-                                                )
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {viewMoodEntry.gratitude && viewMoodEntry.gratitude.length > 0 && (
-                                    <div>
-                                        <h4 className="font-medium mb-2">{t('mood.gratitudeLabel')}</h4>
-                                        <ul className="list-disc list-inside space-y-1">
-                                            {viewMoodEntry.gratitude.map((item, index) => (
-                                                <li key={index} className="text-sm">{item}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-
-                                {viewMoodEntry.notes && (
-                                    <div>
-                                        <h4 className="font-medium mb-2">{t('mood.notesLabel')}</h4>
-                                        <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
-                                            {viewMoodEntry.notes}
-                                        </p>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
+                        <MoodEntryDetail
+                            entry={viewMoodEntry}
+                            onBack={handleBackFromMoodView}
+                            onDelete={() => setConfirmDeleteMood(viewMoodEntry.id)}
+                            formatDate={formatDate}
+                        />
                     );
                 }
 
                 return (
-                    <Card>
-                        <CardHeader>
-                            <div className="flex items-center justify-between flex-wrap">
-                                <div>
-                                    <CardTitle>{t('mood.title')}</CardTitle>
-                                    <CardDescription>{t('mood.description')}</CardDescription>
-                                </div>
-                                <Button
-                                    onClick={() => setShowMoodTracker(true)}
-                                    className="islamic-green text-white"
-                                >
-                                    {t('mood.addNewEntry')}
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                {userData.moodEntries.length === 0 ? (
-                                    <div className="text-center py-8">
-                                        <Heart className="w-16 h-16 mx-auto text-green-500 mb-4" />
-                                        <h3 className="text-lg font-medium mb-2">
-                                            {t('mood.readyToTrack')}
-                                        </h3>
-                                        <p className="text-muted-foreground mb-6">
-                                            {t('mood.trackingHelps')}
-                                        </p>
-                                        <Button
-                                            onClick={() => setShowMoodTracker(true)}
-                                            className="islamic-green text-white"
-                                        >
-                                            {t('mood.startMoodEntry')}
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3">
-                                        <h4 className="font-medium">{t('mood.moodHistory')}</h4>
-                                        <div className="space-y-2">
-                                            {userData.moodEntries.slice().reverse().map((entry) => (
-                                                <div
-                                                    key={entry.id}
-                                                    className="flex items-center justify-between flex-wrap p-4 bg-muted rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
-                                                    onClick={() => handleViewMoodEntry(entry)}
-                                                >
-                                                    <div className="flex items-center gap-4">
-                                                        <div>
-                                                            <p className="font-medium">{entry.date.toLocaleString()} </p>
-                                                            <p className="text-sm text-muted-foreground">
-                                                                {t(`mood.levels.${entry.mood}`)}
-                                                            </p>
-                                                        </div>
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {entry.emotions.slice(0, 3).map(emotion => (
-                                                                <Badge key={emotion} variant="outline" className="text-xs">
-                                                                    {t(`emotions.${emotion}`)}
-                                                                </Badge>
-                                                            ))}
-                                                            {entry.emotions.length > 3 && (
-                                                                <Badge variant="outline" className="text-xs">
-                                                                    +{entry.emotions.length - 3}
-                                                                </Badge>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        {t('mood.viewDetails')}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <MoodView
+                        userData={userData}
+                        onAddMood={() => setShowMoodTracker(true)}
+                        onViewMoodEntry={handleViewMoodEntry}
+                    />
                 );
 
             case 'journal':
@@ -539,306 +283,33 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
                 }
 
                 return (
-                    <Card>
-                        <CardHeader>
-                            <div className="flex items-center justify-between flex-wrap">
-                                <div>
-                                    <CardTitle>{t('nav.journal')}</CardTitle>
-                                    <CardDescription>{t('journal.description')}</CardDescription>
-                                </div>
-                                <Button
-                                    className="islamic-green text-white"
-                                    onClick={() => setShowJournalEntry(true)}
-                                >
-                                    {t('journal.addNewEntry')}
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            {userData.journalEntries.length === 0 ? (
-                                <div className="text-center py-8">
-                                    <BookOpen className="w-16 h-16 mx-auto text-blue-500 mb-4" />
-                                    <h3 className="text-lg font-medium mb-2">
-                                        {t('journal.startWriting')}
-                                    </h3>
-                                    <p className="text-muted-foreground mb-6">
-                                        {t('journal.writingHelps')}
-                                    </p>
-                                    <Button
-                                        className="islamic-green text-white"
-                                        onClick={() => setShowJournalEntry(true)}
-                                    >
-                                        {t('journal.startFirstEntry')}
-                                    </Button>
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between flex-wrap">
-                                        <h4 className="font-medium">{t('journal.allEntries')} ({userData.journalEntries.length})</h4>
-                                    </div>
-                                    <div className="space-y-3">
-                                        {userData.journalEntries
-                                            .slice()
-                                            .reverse()
-                                            .map((entry) => (
-                                                <div
-                                                    key={entry.id}
-                                                    className="p-4 bg-muted rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
-                                                    onClick={() => handleViewJournalEntry(entry)}
-                                                >
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <h5 className="font-medium">
-                                                                    {entry.title || t('journal.untitled')}
-                                                                </h5>
-                                                                {entry.mood && (
-                                                                    <Badge variant="outline" className="text-xs">
-                                                                        <Heart className="w-3 h-3 mr-1" />
-                                                                        {t(`mood.levels.${entry.mood}`)}
-                                                                    </Badge>
-                                                                )}
-                                                                {entry.isPrivate && (
-                                                                    <Badge variant="destructive" className="text-xs">
-                                                                        Private
-                                                                    </Badge>
-                                                                )}
-                                                            </div>
-                                                            <div
-                                                                className="text-sm text-muted-foreground mb-2 line-clamp-2"
-                                                                dangerouslySetInnerHTML={{
-                                                                    __html:
-                                                                        entry.content && entry.content.length > 120
-                                                                            ? `${entry.content.substring(0, 120)}...`
-                                                                            : entry.content || ''
-                                                                }}
-                                                            />
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="text-xs text-muted-foreground">
-                                                                    {format(
-                                                                        typeof entry.date === 'string' ? new Date(entry.date) : entry.date,
-                                                                        'PPp',
-                                                                        { locale: i18n.language === 'ar' ? arSA : enUS }
-                                                                    )}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-sm text-muted-foreground">
-                                                            {t('journal.viewEntry')}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                    </div>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                    <JournalViewList
+                        userData={userData}
+                        onAddEntry={() => setShowJournalEntry(true)}
+                        onViewEntry={handleViewJournalEntry}
+                    />
                 );
 
             case 'insights':
-                const moodCounts = userData.moodEntries.reduce((acc, entry) => {
-                    acc[entry.mood] = (acc[entry.mood] || 0) + 1;
-                    return acc;
-                }, {} as Record<string, number>);
-
-                const mostCommonMood = Object.entries(moodCounts).sort(([, a], [, b]) => b - a)[0];
-                const averageEnergy = userData.moodEntries.length > 0
-                    ? userData.moodEntries.reduce((sum, entry) => sum + entry.energy, 0) / userData.moodEntries.length
-                    : 0;
-                const averageStress = userData.moodEntries.length > 0
-                    ? userData.moodEntries.reduce((sum, entry) => sum + entry.stress, 0) / userData.moodEntries.length
-                    : 0;
-
                 return (
-                    <div className="space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{t('insights.moodAnalytics')}</CardTitle>
-                                <CardDescription>{t('insights.last30Days')}</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                {userData.moodEntries.length === 0 ? (
-                                    <div className="text-center py-8">
-                                        <BarChart3 className="w-16 h-16 mx-auto text-purple-500 mb-4" />
-                                        <h3 className="text-lg font-medium mb-2">
-                                            {t('insights.noDataYet')}
-                                        </h3>
-                                        <p className="text-muted-foreground mb-6">
-                                            {t('insights.startTracking')}
-                                        </p>
-                                        <Button
-                                            onClick={() => {
-                                                setActiveTab('mood');
-                                                setShowMoodTracker(true);
-                                            }}
-                                            className="islamic-green text-white"
-                                        >
-                                            {t('mood.startMoodEntry')}
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <div className="p-4 bg-muted rounded-lg">
-                                            <h4 className="font-medium mb-2">{t('insights.totalEntries')}</h4>
-                                            <p className="text-2xl font-bold text-green-600">
-                                                {userData.moodEntries.length}
-                                            </p>
-                                        </div>
-
-                                        {mostCommonMood && (
-                                            <div className="p-4 bg-muted rounded-lg">
-                                                <h4 className="font-medium mb-2">{t('insights.mostCommonMood')}</h4>
-                                                <p className="text-lg font-semibold">
-                                                    {t(`mood.levels.${mostCommonMood[0]}`)}
-                                                </p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {mostCommonMood[1]} {t('insights.times')}
-                                                </p>
-                                            </div>
-                                        )}
-
-                                        <div className="p-4 bg-muted rounded-lg">
-                                            <h4 className="font-medium mb-2">{t('insights.averageEnergy')}</h4>
-                                            <p className="text-2xl font-bold text-yellow-600">
-                                                {averageEnergy.toFixed(1)}/5
-                                            </p>
-                                        </div>
-
-                                        <div className="p-4 bg-muted rounded-lg">
-                                            <h4 className="font-medium mb-2">{t('insights.averageStress')}</h4>
-                                            <p className="text-2xl font-bold text-red-600">
-                                                {averageStress.toFixed(1)}/5
-                                            </p>
-                                        </div>
-
-                                        <div className="p-4 bg-muted rounded-lg">
-                                            <h4 className="font-medium mb-2">{t('insights.journalEntries')}</h4>
-                                            <p className="text-2xl font-bold text-blue-600">
-                                                {userData.journalEntries.length}
-                                            </p>
-                                        </div>
-
-                                        <div className="p-4 bg-muted rounded-lg">
-                                            <h4 className="font-medium mb-2">{t('insights.streakDays')}</h4>
-                                            <p className="text-2xl font-bold text-purple-600">
-                                                {userData.moodEntries.length > 0 ? Math.min(userData.moodEntries.length, 7) : 0}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-
-                        {userData.moodEntries.length > 0 && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>{t('insights.moodDistribution')}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-3">
-                                        {Object.entries(moodCounts).map(([mood, count]) => {
-                                            const percentage = (count / userData.moodEntries.length) * 100;
-                                            return (
-                                                <div key={mood} className="flex items-center justify-between flex-wrap">
-                                                    <span className="font-medium">{t(`mood.levels.${mood}`)}</span>
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-                                                            <div
-                                                                className="h-full bg-green-500 rounded-full"
-                                                                style={{ width: `${percentage}%` }}
-                                                            />
-                                                        </div>
-                                                        <span className="text-sm text-muted-foreground w-12">
-                                                            {percentage.toFixed(0)}%
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
-                    </div>
+                    <InsightsView
+                        userData={userData}
+                        onNavigateToMood={() => {
+                            setActiveTab('mood');
+                            setShowMoodTracker(true);
+                        }}
+                    />
                 );
 
             case 'settings':
                 return (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t('nav.settings')}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div>
-                                <h3 className="font-medium mb-3">{t('settings.theme')}</h3>
-                                <div className="flex gap-2">
-                                    <Button
-                                        variant={theme === 'light' ? 'default' : 'outline'}
-                                        size="sm"
-                                        onClick={() => setTheme('light')}
-                                    >
-                                        <Sun className="w-4 h-4 ml-2" />
-                                        {t('settings.light')}
-                                    </Button>
-                                    <Button
-                                        variant={theme === 'dark' ? 'default' : 'outline'}
-                                        size="sm"
-                                        onClick={() => setTheme('dark')}
-                                    >
-                                        <Moon className="w-4 h-4 ml-2" />
-                                        {t('settings.dark')}
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 className="font-medium mb-3">{t('settings.language')}</h3>
-                                <div className="flex gap-2">
-                                    <Button
-                                        variant={i18n.language === 'en' ? 'default' : 'outline'}
-                                        size="sm"
-                                        onClick={() => changeLanguage('en')}
-                                    >
-                                        English
-                                    </Button>
-                                    <Button
-                                        variant={i18n.language === 'ar' ? 'default' : 'outline'}
-                                        size="sm"
-                                        onClick={() => changeLanguage('ar')}
-                                    >
-                                        العربية
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 className="font-medium mb-3">{t('settings.userInfo')}</h3>
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between flex-wrap">
-                                        <div>
-                                            <p className="text-sm font-medium">
-                                                {t('auth.usernameLabel')}: {user.username}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {t('settings.changeUsernameDescription')}
-                                            </p>
-                                        </div>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => {
-                                                setNewUsername(user.username);
-                                                setShowEditUsername(true);
-                                            }}
-                                        >
-                                            {t('settings.changeUsername')}
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <SettingsView
+                        user={user}
+                        onChangeUsername={() => {
+                            setNewUsername(user.username);
+                            setShowEditUsername(true);
+                        }}
+                    />
                 );
 
             default:
