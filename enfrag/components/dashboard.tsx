@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import {
     Calendar,
@@ -48,7 +49,49 @@ interface DashboardProps {
 type ActiveTab = 'dashboard' | 'mood' | 'journal' | 'insights' | 'settings';
 
 export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser, currentPin }: DashboardProps) {
-    const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    
+    // Get initial tab from URL params, default to 'dashboard'
+    const getActiveTabFromUrl = (): ActiveTab => {
+        const tab = searchParams.get('tab');
+        const validTabs: ActiveTab[] = ['dashboard', 'mood', 'journal', 'insights', 'settings'];
+        return validTabs.includes(tab as ActiveTab) ? (tab as ActiveTab) : 'dashboard';
+    };
+
+    const [activeTab, setActiveTab] = useState<ActiveTab>(getActiveTabFromUrl());
+    
+    // Update URL when tab changes
+    const handleTabChange = (newTab: ActiveTab) => {
+        setActiveTab(newTab);
+        router.push(`?tab=${newTab}`, { scroll: false });
+    };
+
+    // Listen for browser back/forward navigation
+    useEffect(() => {
+        const handleUrlChange = () => {
+            const newTab = getActiveTabFromUrl();
+            setActiveTab(newTab);
+        };
+
+        // Update tab when URL changes (back/forward buttons)
+        window.addEventListener('popstate', handleUrlChange);
+        
+        // Update initial tab if URL changes
+        handleUrlChange();
+
+        return () => {
+            window.removeEventListener('popstate', handleUrlChange);
+        };
+    }, [searchParams]);
+
+    // Initialize URL on first load if no tab parameter exists
+    useEffect(() => {
+        if (!searchParams.get('tab')) {
+            router.replace('?tab=dashboard', { scroll: false });
+        }
+    }, []);
+
     const [showMoodTracker, setShowMoodTracker] = useState(false);
     const [viewMoodEntry, setViewMoodEntry] = useState<MoodEntry | null>(null);
     const [showJournalEntry, setShowJournalEntry] = useState(false);
@@ -118,7 +161,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
         };
         onUpdateData(updatedData);
         setShowMoodTracker(false);
-        setActiveTab('dashboard');
+        handleTabChange('dashboard');
     };
 
     const handleViewMoodEntry = (entry: MoodEntry) => {
@@ -188,7 +231,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
         setJournalEntries(updatedEntries);
         setShowJournalEntry(false);
         setEditJournalEntry(null);
-        setActiveTab('journal');
+        handleTabChange('journal');
     };
 
     const handleViewJournalEntry = (entry: JournalEntry) => {
@@ -223,11 +266,11 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
                         user={user}
                         userData={userData}
                         onNavigateToMood={() => {
-                            setActiveTab('mood');
+                            handleTabChange('mood');
                             setShowMoodTracker(true);
                         }}
-                        onNavigateToJournal={() => setActiveTab('journal')}
-                        onNavigateToInsights={() => setActiveTab('insights')}
+                        onNavigateToJournal={() => handleTabChange('journal')}
+                        onNavigateToInsights={() => handleTabChange('insights')}
                     />
                 );
 
@@ -295,7 +338,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
                     <InsightsView
                         userData={userData}
                         onNavigateToMood={() => {
-                            setActiveTab('mood');
+                            handleTabChange('mood');
                             setShowMoodTracker(true);
                         }}
                     />
@@ -332,7 +375,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
                             {sidebarItems.map(item => (
                                 <SidebarMenuItem key={item.id}>
                                     <SidebarMenuButton
-                                        onClick={() => setActiveTab(item.id as ActiveTab)}
+                                        onClick={() => handleTabChange(item.id as ActiveTab)}
                                         isActive={activeTab === item.id}
                                     >
                                         <item.icon className="w-5 h-5" />
@@ -380,7 +423,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
                 </Sidebar>
 
                 {/* Main Content */}
-                <main className="flex-1 overflow-y-auto p-6  ">
+                <main className="flex-1  p-6 max-w-4xl mx-auto w-full">
                     {isMobile && (
                         <div className="mb-4">
                             <SidebarTrigger />

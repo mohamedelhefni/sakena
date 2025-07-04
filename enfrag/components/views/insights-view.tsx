@@ -24,11 +24,11 @@ export function InsightsView({ userData, onNavigateToMood }: InsightsViewProps) 
     }, {} as Record<string, number>);
 
     const mostCommonMood = Object.entries(moodCounts).sort(([, a], [, b]) => b - a)[0];
-    
+
     const averageEnergy = userData.moodEntries.length > 0
         ? userData.moodEntries.reduce((sum, entry) => sum + entry.energy, 0) / userData.moodEntries.length
         : 0;
-    
+
     const averageStress = userData.moodEntries.length > 0
         ? userData.moodEntries.reduce((sum, entry) => sum + entry.stress, 0) / userData.moodEntries.length
         : 0;
@@ -143,9 +143,9 @@ export function InsightsView({ userData, onNavigateToMood }: InsightsViewProps) 
                                     {moodTrend > 0 ? '↗' : moodTrend < 0 ? '↘' : '→'}
                                 </p>
                                 <span className="text-sm text-muted-foreground">
-                                    {moodTrend > 0 ? t('insights.improving') : 
-                                     moodTrend < 0 ? t('insights.declining') : 
-                                     t('insights.stable')}
+                                    {moodTrend > 0 ? t('insights.improving') :
+                                        moodTrend < 0 ? t('insights.declining') :
+                                            t('insights.stable')}
                                 </span>
                             </div>
                         </div>

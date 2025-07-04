@@ -43,28 +43,28 @@ export function MoodHeatmap({ moodEntries }: MoodHeatmapProps) {
     for (let week = 0; week < weeksToShow; week++) {
         const weekStart = addDays(startDate, week * 7);
         const weekDays = [];
-        
+
         for (let day = 0; day < 7; day++) {
             const currentDay = addDays(weekStart, day);
-            
+
             // Find mood entry for this day
             const dayEntry = moodEntries.find(entry => {
                 const entryDate = typeof entry.date === 'string' ? new Date(entry.date) : entry.date;
                 return isSameDay(entryDate, currentDay);
             });
-            
+
             const moodValue = dayEntry ? getMoodValue(dayEntry.mood) : 0;
-            
+
             weekDays.push({
                 date: currentDay,
                 moodValue,
                 colorClass: getMoodColor(moodValue),
-                tooltip: dayEntry 
+                tooltip: dayEntry
                     ? `${format(currentDay, 'MMM dd')}: ${t(`mood.levels.${dayEntry.mood}`)}`
                     : `${format(currentDay, 'MMM dd')}: ${t('insights.noEntry')}`
             });
         }
-        
+
         weeks.push(weekDays);
     }
 
@@ -109,7 +109,7 @@ export function MoodHeatmap({ moodEntries }: MoodHeatmapProps) {
                                 <div className="h-3 text-xs">
                                     {week[0].date.getDate() <= 7 ? format(week[0].date, 'MMM') : ''}
                                 </div>
-                                
+
                                 {/* Days */}
                                 {week.map((day, dayIndex) => (
                                     <div

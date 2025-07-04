@@ -67,42 +67,42 @@ export function MoodTrendChart({ moodEntries }: MoodTrendChartProps) {
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                                dataKey="date" 
+                            <XAxis
+                                dataKey="date"
                                 tick={{ fontSize: 12 }}
                                 interval="preserveStartEnd"
                             />
-                            <YAxis 
-                                domain={[1, 5]} 
+                            <YAxis
+                                domain={[1, 5]}
                                 tick={{ fontSize: 12 }}
                             />
-                            <Tooltip 
+                            <Tooltip
                                 labelFormatter={(label) => `Date: ${label}`}
                                 formatter={(value, name) => [
                                     value,
                                     name === 'mood' ? t('insights.mood') :
-                                    name === 'energy' ? t('insights.energy') :
-                                    t('insights.stress')
+                                        name === 'energy' ? t('insights.energy') :
+                                            t('insights.stress')
                                 ]}
                             />
-                            <Line 
-                                type="monotone" 
-                                dataKey="mood" 
-                                stroke="#10b981" 
+                            <Line
+                                type="monotone"
+                                dataKey="mood"
+                                stroke="#10b981"
                                 strokeWidth={2}
                                 dot={{ fill: '#10b981' }}
                             />
-                            <Line 
-                                type="monotone" 
-                                dataKey="energy" 
-                                stroke="#f59e0b" 
+                            <Line
+                                type="monotone"
+                                dataKey="energy"
+                                stroke="#f59e0b"
                                 strokeWidth={2}
                                 dot={{ fill: '#f59e0b' }}
                             />
-                            <Line 
-                                type="monotone" 
-                                dataKey="stress" 
-                                stroke="#ef4444" 
+                            <Line
+                                type="monotone"
+                                dataKey="stress"
+                                stroke="#ef4444"
                                 strokeWidth={2}
                                 dot={{ fill: '#ef4444' }}
                             />

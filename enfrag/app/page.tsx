@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { AuthScreen } from '@/components/auth-screen';
 import { Dashboard } from '@/components/dashboard';
 import { SecureIndexedDBStorage } from '@/lib/secure-indexeddb';
@@ -105,13 +105,22 @@ export default function Home() {
   }
 
   return (
-    <Dashboard
-      user={user}
-      userData={userData}
-      onLogout={handleLogout}
-      onUpdateData={handleUpdateData}
-      onUpdateUser={handleUpdateUser}
-      currentPin={currentPin}
-    />
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p>جاري التحميل... / Loading...</p>
+        </div>
+      </div>
+    }>
+      <Dashboard
+        user={user}
+        userData={userData}
+        onLogout={handleLogout}
+        onUpdateData={handleUpdateData}
+        onUpdateUser={handleUpdateUser}
+        currentPin={currentPin}
+      />
+    </Suspense>
   );
 }

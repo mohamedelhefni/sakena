@@ -15,15 +15,15 @@ interface DashboardOverviewProps {
     onNavigateToInsights: () => void;
 }
 
-export function DashboardOverview({ 
-    user, 
-    userData, 
-    onNavigateToMood, 
-    onNavigateToJournal, 
-    onNavigateToInsights 
+export function DashboardOverview({
+    user,
+    userData,
+    onNavigateToMood,
+    onNavigateToJournal,
+    onNavigateToInsights
 }: DashboardOverviewProps) {
     const { t } = useTranslation();
-    
+
     // Get today's Islamic quote
     const todayQuote = ISLAMIC_QUOTES[new Date().getDate() % ISLAMIC_QUOTES.length];
 

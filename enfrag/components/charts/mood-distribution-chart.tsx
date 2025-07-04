@@ -65,7 +65,7 @@ export function MoodDistributionChart({ moodEntries }: MoodDistributionChartProp
                                     <Cell key={`cell-${index}`} fill={entry.color} />
                                 ))}
                             </Pie>
-                            <Tooltip 
+                            <Tooltip
                                 formatter={(value, name) => [`${value} entries`, name]}
                             />
                         </PieChart>
