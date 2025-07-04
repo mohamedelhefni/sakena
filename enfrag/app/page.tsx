@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { AuthScreen } from '@/components/auth-screen';
 import { Dashboard } from '@/components/dashboard';
+import { LandingPage } from '@/components/landing-page';
 import { SecureIndexedDBStorage } from '@/lib/secure-indexeddb';
 import { User, UserData } from '@/lib/types';
 
@@ -12,6 +13,7 @@ export default function Home() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [currentPin, setCurrentPin] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
+  const [showAuthScreen, setShowAuthScreen] = useState(false);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -76,6 +78,7 @@ export default function Home() {
     setUser(null);
     setUserData(null);
     setCurrentPin('');
+    setShowAuthScreen(false); // Return to landing page
   };
 
   const handleUpdateUser = async (newUser: User) => {
@@ -100,6 +103,12 @@ export default function Home() {
     );
   }
 
+  // Show landing page if not authenticated and not showing auth screen
+  if (!isAuthenticated && !showAuthScreen) {
+    return <LandingPage onGetStarted={() => setShowAuthScreen(true)} />;
+  }
+
+  // Show auth screen if requested but not authenticated
   if (!isAuthenticated || !user || !userData) {
     return <AuthScreen onAuthenticated={handleAuthenticated} />;
   }
