@@ -268,4 +268,33 @@ export class SecureIndexedDBStorage {
             return false;
         }
     }
+    static async getStorageInfo() {
+        if (navigator.storage && navigator.storage.estimate) {
+            const { usage = 0, quota = 0 } = await navigator.storage.estimate();
+            const usagePercentage = quota ? (usage / quota) * 100 : 0;
+            return {
+                usage,
+                quota,
+                usagePercentage,
+                formattedUsage: SecureIndexedDBStorage.formatBytes(usage),
+                formattedQuota: SecureIndexedDBStorage.formatBytes(quota),
+            };
+        }
+        // Fallback if estimate is not available
+        return {
+            usage: 0,
+            quota: 0,
+            usagePercentage: 0,
+            formattedUsage: '0 B',
+            formattedQuota: '0 B',
+        };
+    }
+
+    static formatBytes(bytes: number) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
 }

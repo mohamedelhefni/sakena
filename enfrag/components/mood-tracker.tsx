@@ -101,7 +101,7 @@ export function MoodTracker({ onSave, onCancel }: MoodTrackerProps) {
                     {/* Mood Selection */}
                     <div className="space-y-3">
                         <Label className="text-base font-medium">{t('mood.howAreYouFeeling')}</Label>
-                        <div className="flex justify-around p-2  dark:bg-gray-800 rounded-lg">
+                        <div className="flex justify-around p-2   rounded-lg">
                             {moodLevels.map(({ value, label, emoji, color }) => (
                                 <button
                                     key={value}

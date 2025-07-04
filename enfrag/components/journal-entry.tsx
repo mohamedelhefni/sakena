@@ -32,7 +32,7 @@ export function JournalEntryComponent({ onSave, onCancel, existingEntry }: Journ
         if (isNaN(dateObj.getTime())) {
             return 'Invalid Date';
         }
-        
+
         return format(dateObj, 'PPP', { locale });
     };
 

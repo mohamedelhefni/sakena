@@ -26,7 +26,7 @@ export function JournalView({ entry, onEdit, onBack, onDelete }: JournalViewProp
         if (isNaN(dateObj.getTime())) {
             return 'Invalid Date';
         }
-        
+
         return format(dateObj, 'PPP', { locale });
     };
 

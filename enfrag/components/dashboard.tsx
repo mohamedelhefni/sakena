@@ -59,7 +59,7 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
         if (isNaN(dateObj.getTime())) {
             return 'Invalid Date';
         }
-        
+
         return format(dateObj, 'PPP p', { locale });
     };
 
@@ -819,20 +819,31 @@ export function Dashboard({ user, userData, onLogout, onUpdateData }: DashboardP
                     <SidebarFooter>
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center justify-around p-2 rounded-md bg-muted">
-                                <Button variant="ghost" size="icon" onClick={() => setTheme('light')} className={theme === 'light' ? 'bg-accent' : ''}>
-                                    <Sun className="w-5 h-5" />
-                                </Button>
-                                <Button variant="ghost" size="icon" onClick={() => setTheme('dark')} className={theme === 'dark' ? 'bg-accent' : ''}>
-                                    <Moon className="w-5 h-5" />
-                                </Button>
+                                {
+                                    theme == 'dark' ? (
+                                        <Button variant="ghost" size="icon" onClick={() => setTheme('light')} >
+                                            <Sun className="w-5 h-5" />
+                                        </Button>
+                                    ) : (
+                                        <Button variant="ghost" size="icon" onClick={() => setTheme('dark')}>
+                                            <Moon className="w-5 h-5" />
+                                        </Button>
+                                    )
+                                }
                             </div>
                             <div className="flex items-center justify-around p-2 rounded-md bg-muted">
-                                <Button variant="ghost" size="icon" onClick={() => changeLanguage('en')} className={i18n.language === 'en' ? 'bg-accent' : ''}>
-                                    EN
-                                </Button>
-                                <Button variant="ghost" size="icon" onClick={() => changeLanguage('ar')} className={i18n.language === 'ar' ? 'bg-accent' : ''}>
-                                    AR
-                                </Button>
+                                {
+                                    i18n.language == 'ar' ? (
+                                        <Button variant="ghost" size="icon" onClick={() => changeLanguage('en')} >
+                                            EN
+                                        </Button>
+                                    ) : (
+                                        <Button variant="ghost" size="icon" onClick={() => changeLanguage('ar')} >
+                                            ع
+                                        </Button>
+                                    )
+                                }
+
                             </div>
                             <Button variant="outline" onClick={onLogout}>
                                 <LogOut className="w-5 h-5 mr-2" />
