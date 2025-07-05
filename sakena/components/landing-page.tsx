@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Shield, Globe, Sparkles, Moon, Sun, BookOpen, BarChart3, Lock, Palette, Download, Smartphone, Wifi, Zap } from 'lucide-react';
+import { Heart, Shield, Globe, Sparkles, Moon, Sun, BookOpen, BarChart3, Lock, Palette, Download, Smartphone, Wifi, Zap, Upload, FileDown, Database } from 'lucide-react';
 
 interface LandingPageProps {
     onGetStarted: () => void;
@@ -90,7 +90,30 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                         icon: Zap,
                         title: "أداء سريع",
                         description: "تحميل فوري وتخزين ذكي"
+                    },
+                    {
+                        icon: Upload,
+                        title: "استيراد وتصدير",
+                        description: "نقل بياناتك بأمان بين الأجهزة"
+                    },
+                    {
+                        icon: Database,
+                        title: "تخزين محلي",
+                        description: "بياناتك محفوظة في جهازك بدون خوادم"
                     }
+                ]
+            },
+            dataPortability: {
+                title: "نقل البيانات",
+                subtitle: "بياناتك ملكك - انقلها واستوردها بكل حرية",
+                description: "صدّر جميع بياناتك بتنسيق آمن واستوردها في أي جهاز آخر",
+                export: "تصدير البيانات",
+                import: "استيراد البيانات",
+                features: [
+                    "تصدير مشفر لجميع البيانات",
+                    "استيراد سهل من ملف JSON",
+                    "حفظ احتياطي تلقائي",
+                    "نقل آمن بين الأجهزة"
                 ]
             },
             pwa: {
@@ -163,7 +186,30 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                         icon: Zap,
                         title: "Lightning Fast",
                         description: "Instant loading with smart caching"
+                    },
+                    {
+                        icon: Upload,
+                        title: "Import & Export",
+                        description: "Securely transfer your data between devices"
+                    },
+                    {
+                        icon: Database,
+                        title: "Local Storage",
+                        description: "Your data stays on your device, no servers"
                     }
+                ]
+            },
+            dataPortability: {
+                title: "Data Portability",
+                subtitle: "Your data belongs to you - transfer and import it freely",
+                description: "Export all your data in a secure format and import it on any other device",
+                export: "Export Data",
+                import: "Import Data",
+                features: [
+                    "Encrypted export of all data",
+                    "Easy import from JSON file",
+                    "Automatic backup saves",
+                    "Secure transfer between devices"
                 ]
             },
             pwa: {
@@ -279,6 +325,62 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                 </div>
             </section>
 
+            {/* Data Portability Section */}
+            <section className="container mx-auto px-4 py-20">
+                <Card className="max-w-4xl mx-auto border-0 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700">
+                    <CardHeader className="text-center pb-8">
+                        <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
+                            <FileDown className="w-10 h-10 text-white" />
+                        </div>
+                        <CardTitle className="text-3xl mb-4">{currentContent.dataPortability.title}</CardTitle>
+                        <CardDescription className="text-lg text-gray-600 dark:text-gray-300">
+                            {currentContent.dataPortability.subtitle}
+                        </CardDescription>
+                        <p className="text-gray-500 dark:text-gray-400 mt-4">
+                            {currentContent.dataPortability.description}
+                        </p>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid md:grid-cols-2 gap-8 mb-8">
+                            <div className="text-center">
+                                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center">
+                                    <FileDown className="w-8 h-8 text-white" />
+                                </div>
+                                <h3 className="text-xl font-semibold mb-2">{currentContent.dataPortability.export}</h3>
+                                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                                    {language === 'ar' 
+                                        ? 'احفظ نسخة احتياطية من جميع بياناتك'
+                                        : 'Save a backup of all your data'
+                                    }
+                                </p>
+                            </div>
+                            <div className="text-center">
+                                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center">
+                                    <Upload className="w-8 h-8 text-white" />
+                                </div>
+                                <h3 className="text-xl font-semibold mb-2">{currentContent.dataPortability.import}</h3>
+                                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                                    {language === 'ar' 
+                                        ? 'استورد بياناتك من جهاز آخر'
+                                        : 'Import your data from another device'
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            {currentContent.dataPortability.features.map((feature, index) => (
+                                <div key={index} className="flex items-center gap-3">
+                                    <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span className="text-white text-sm">✓</span>
+                                    </div>
+                                    <span className="text-gray-700 dark:text-gray-300">{feature}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            </section>
+
             {/* PWA Features Section */}
             <section className="container mx-auto px-4 py-20">
                 <Card className="max-w-4xl mx-auto border-0 bg-gradient-to-r from-blue-50 to-green-50 dark:from-gray-800 dark:to-gray-700">
@@ -314,7 +416,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                     </h2>
                 </div>
                 
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
                     {currentContent.features.list.map((feature, index) => (
                         <Card key={index} className="text-center border-0 bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                             <CardHeader className="pb-4">

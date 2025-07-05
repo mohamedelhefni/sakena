@@ -45,7 +45,7 @@ export class SecureIndexedDBStorage {
                 pinVerification: this.encrypt('verified', pin)
             };
 
-            await indexedDBStorage.saveUserData(userData.user?.username || "username", basicUserData);
+            await indexedDBStorage.saveUserData(userData?.user?.username || "username", basicUserData);
 
             // Save individual entries for better performance
             const moodEntries = userData.moodEntries || [];
