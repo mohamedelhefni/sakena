@@ -109,15 +109,39 @@
     </div>
     
     <script>
+        // Try to redirect to the main app immediately
+        function loadMainApp() {
+            // Navigate to the main app - the service worker should serve the cached version
+            window.location.href = '/';
+        }
+
+        function retryConnection() {
+            window.location.href = '/';
+        }
+
         // Reload when back online
         window.addEventListener('online', () => {
-            window.location.reload();
+            window.location.href = '/';
         });
         
-        // Check connection status
+        // Check connection status and try to load main app
         if (navigator.onLine) {
-            window.location.reload();
+            window.location.href = '/';
+        } else {
+            // Even if offline, try to load the main app after a short delay
+            // The service worker should serve the cached version
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 2000);
         }
+        
+        // Override the try again button
+        document.addEventListener('DOMContentLoaded', () => {
+            const tryAgainBtn = document.querySelector('.btn');
+            if (tryAgainBtn) {
+                tryAgainBtn.onclick = retryConnection;
+            }
+        });
     </script>
 </body>
 </html>

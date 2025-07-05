@@ -5,6 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import I18nProvider from "@/components/i18n-provider";
 import { PWAFeatures } from "@/components/pwa-features";
 import { StructuredData } from "@/components/structured-data";
+import { OfflineAppInitializer } from "@/components/offline-app-initializer";
+import { PWAInstaller } from "@/components/pwa-installer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +31,7 @@ export const metadata: Metadata = {
     "anxiety",
     "wellbeing",
     "journal",
-    "diary", 
+    "diary",
     "islamic",
     "quran",
     "mindfulness",
@@ -134,7 +136,7 @@ export const metadata: Metadata = {
         type: "image/png",
       },
       {
-        url: "https://sakinah-app.com/og-image-ar.png", 
+        url: "https://sakinah-app.com/og-image-ar.png",
         width: 1200,
         height: 630,
         alt: "سكينة - تطبيق الصحة النفسية وتتبع المزاج",
@@ -187,18 +189,18 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#16a34a" />
         <meta name="msapplication-tap-highlight" content="no" />
         <meta name="theme-color" content="#16a34a" />
-        
+
         {/* App Icons */}
         <link rel="apple-touch-icon" href="/icons/icon-152x152.png" />
         <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
-        
+
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-72x72.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-72x72.png" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="mask-icon" href="/icons/icon.svg" color="#16a34a" />
         <link rel="shortcut icon" href="/favicon.ico" />
-        
+
         {/* Splash Screens for iOS */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -213,8 +215,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <I18nProvider>
+            <OfflineAppInitializer />
             <StructuredData />
             <PWAFeatures />
+            <PWAInstaller />
             {children}
           </I18nProvider>
         </ThemeProvider>
