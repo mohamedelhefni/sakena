@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Eye, EyeOff, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +21,39 @@ export function AuthScreen({ onAuthenticated }: AuthProps) {
     const [isLogin, setIsLogin] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
+    // Password strength indicator component
+    const PasswordStrengthIndicator = ({ password }: { password: string }) => {
+        if (!password || isLogin) return null;
+        
+        const strength = EncryptionService.getPasswordStrength(password);
+        const strengthColors = {
+            weak: 'bg-red-500',
+            fair: 'bg-yellow-500',
+            good: 'bg-blue-500',
+            strong: 'bg-green-500'
+        };
+        
+        const strengthWidths = {
+            weak: 'w-1/4',
+            fair: 'w-2/4',
+            good: 'w-3/4',
+            strong: 'w-full'
+        };
+
+        return (
+            <div className="mt-2">
+                <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                    <span>{t('auth.passwordStrength')}</span>
+                    <span className="capitalize">{t(`auth.passwordStrength${strength.charAt(0).toUpperCase() + strength.slice(1)}`)}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className={`h-2 rounded-full transition-all duration-300 ${strengthColors[strength]} ${strengthWidths[strength]}`}></div>
+                </div>
+            </div>
+        );
+    };
 
     useEffect(() => {
         const loadExistingUser = async () => {
@@ -38,7 +72,7 @@ export function AuthScreen({ onAuthenticated }: AuthProps) {
         setIsLoading(true);
 
         if (!EncryptionService.validatePin(pin)) {
-            setError(t('auth.pinTooShort'));
+            setError(t('auth.passwordTooShort'));
             setIsLoading(false);
             return;
         }
@@ -56,7 +90,7 @@ export function AuthScreen({ onAuthenticated }: AuthProps) {
                 if (userData) {
                     onAuthenticated(userData.user, pin);
                 } else {
-                    setError(t('auth.incorrectPin'));
+                    setError(t('auth.incorrectPassword'));
                 }
             } else {
                 // Create new user
@@ -92,9 +126,8 @@ export function AuthScreen({ onAuthenticated }: AuthProps) {
     };
 
     const handlePinChange = (value: string) => {
-        // Only allow numbers
-        const numericValue = value.replace(/[^0-9]/g, '');
-        setPin(numericValue);
+        // Allow any characters for password
+        setPin(value);
     };
 
     return (
@@ -108,7 +141,7 @@ export function AuthScreen({ onAuthenticated }: AuthProps) {
                         {isLogin ? t('auth.welcomeBack', { username }) : t('auth.createAccount')}
                     </CardTitle>
                     <CardDescription>
-                        {isLogin ? t('auth.enterPinToUnlock') : t('auth.setupAccount')}
+                        {isLogin ? t('auth.enterPasswordToUnlock') : t('auth.setupAccount')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -128,17 +161,36 @@ export function AuthScreen({ onAuthenticated }: AuthProps) {
                             </div>
                         )}
                         <div className="space-y-2">
-                            <label htmlFor="pin" className="text-sm font-medium">{t('auth.pinLabel')}</label>
-                            <Input
-                                id="pin"
-                                type="password"
-                                placeholder="••••"
-                                value={pin}
-                                onChange={(e) => handlePinChange(e.target.value)}
-                                maxLength={4}
-                                className="w-full text-center tracking-[0.5em]"
-                                aria-label={t('auth.pinLabel')}
-                            />
+                            <label htmlFor="pin" className="text-sm font-medium">{t('auth.passwordLabel')}</label>
+                            <div className="relative">
+                                <Input
+                                    id="pin"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder={t('auth.passwordPlaceholder')}
+                                    value={pin}
+                                    onChange={(e) => handlePinChange(e.target.value)}
+                                    className="w-full pr-10"
+                                    aria-label={t('auth.passwordLabel')}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                        <Eye className="h-4 w-4" />
+                                    )}
+                                </button>
+                            </div>
+                            <PasswordStrengthIndicator password={pin} />
+                            {!isLogin && (
+                                <div className="flex items-center text-xs text-muted-foreground">
+                                    <Info className="w-3 h-3 mr-1" />
+                                    {t('auth.passwordHelp')}
+                                </div>
+                            )}
                         </div>
                         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
                         <Button type="submit" className="w-full" disabled={isLoading}>

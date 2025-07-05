@@ -352,10 +352,15 @@ export function Dashboard({ user, userData, onLogout, onUpdateData, onUpdateUser
                     <SettingsView
                         user={user}
                         userData={userData}
+                        currentPassword={currentPin || ''}
                         onUpdateData={onUpdateData}
                         onChangeUsername={() => {
                             setNewUsername(user.username);
                             setShowEditUsername(true);
+                        }}
+                        onReauthenticate={() => {
+                            // Force a logout to re-authenticate with new password
+                            onLogout();
                         }}
                     />
                 );

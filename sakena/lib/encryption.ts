@@ -50,8 +50,46 @@ export class EncryptionService {
         }
     }
 
+    // Alternative methods for simple string-based encryption/decryption
+    static encryptString(data: string, password: string): string {
+        const encrypted = this.encrypt(data, password);
+        return JSON.stringify(encrypted);
+    }
+
+    static decryptString(encryptedString: string, password: string): string | null {
+        try {
+            const encryptedData: EncryptedData = JSON.parse(encryptedString);
+            return this.decrypt(encryptedData, password);
+        } catch (error) {
+            console.error('String decryption failed:', error);
+            return null;
+        }
+    }
+
     static validatePin(pin: string): boolean {
-        return pin.length >= 4 && /^\d+$/.test(pin);
+        // Allow any string password with minimum length of 4 characters
+        // Can include letters, numbers, symbols, spaces, etc.
+        return pin.length >= 4;
+    }
+
+    static getPasswordStrength(password: string): 'weak' | 'fair' | 'good' | 'strong' {
+        if (password.length < 4) return 'weak';
+        if (password.length < 8) return 'fair';
+        
+        let score = 0;
+        // Length bonus
+        if (password.length >= 12) score += 2;
+        else if (password.length >= 8) score += 1;
+        
+        // Character variety
+        if (/[a-z]/.test(password)) score += 1;
+        if (/[A-Z]/.test(password)) score += 1;
+        if (/[0-9]/.test(password)) score += 1;
+        if (/[^A-Za-z0-9]/.test(password)) score += 1;
+        
+        if (score >= 5) return 'strong';
+        if (score >= 3) return 'good';
+        return 'fair';
     }
 }
 

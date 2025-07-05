@@ -7,15 +7,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { User, UserData } from '@/lib/types';
 import { useTheme } from 'next-themes';
 import { PWADemo } from '@/components/pwa-demo';
+import { ImportExport } from '@/components/import-export';
 
 interface SettingsViewProps {
     user: User;
     userData: UserData;
+    currentPassword: string;
     onChangeUsername: () => void;
     onUpdateData: (data: UserData) => void;
+    onReauthenticate: () => void;
 }
 
-export function SettingsView({ user, userData, onChangeUsername, onUpdateData }: SettingsViewProps) {
+export function SettingsView({ user, userData, currentPassword, onChangeUsername, onUpdateData, onReauthenticate }: SettingsViewProps) {
     const { t, i18n } = useTranslation();
     const { theme, setTheme } = useTheme();
 
@@ -126,6 +129,13 @@ export function SettingsView({ user, userData, onChangeUsername, onUpdateData }:
                 </div>
             </CardContent>
         </Card>
+
+        {/* Import/Export */}
+        <ImportExport 
+            user={user}
+            currentPassword={currentPassword}
+            onImportSuccess={onReauthenticate}
+        />
 
         {/* PWA Features */}
         <PWADemo />
