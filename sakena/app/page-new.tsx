@@ -65,17 +65,6 @@ export default function Home() {
         await SecureIndexedDBStorage.saveUserData(newData, currentPin);
     };
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p>جاري التحميل... / Loading...</p>
-                </div>
-            </div>
-        );
-    }
-
     if (!isAuthenticated || !user || !userData) {
         return <AuthScreen onAuthenticated={handleAuthenticated} />;
     }
