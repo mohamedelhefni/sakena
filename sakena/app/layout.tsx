@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     "الإسلام",
     "العافية النفسية"
   ],
-  authors: [{ name: "Sakinah Team", url: "https://sakinah-app.com" }],
+  authors: [{ name: "Sakinah Team", url: "https://skoon.vercel.app" }],
   creator: "Sakinah Team",
   publisher: "Sakinah Team",
   category: "Health & Fitness",
@@ -72,10 +72,10 @@ export const metadata: Metadata = {
     // yahoo: "your-yahoo-verification-code",
   },
   alternates: {
-    canonical: "https://sakinah-app.com",
+    canonical: "https://skoon.vercel.app",
     languages: {
-      'ar': 'https://sakinah-app.com/ar',
-      'en': 'https://sakinah-app.com/en',
+      'ar': 'https://skoon.vercel.app/ar',
+      'en': 'https://skoon.vercel.app/en',
     },
   },
   manifest: "/manifest.json",
@@ -115,7 +115,7 @@ export const metadata: Metadata = {
   referrer: "origin-when-cross-origin",
   appLinks: {
     web: {
-      url: "https://sakinah-app.com",
+      url: "https://skoon.vercel.app",
       should_fallback: true,
     },
   },
@@ -123,20 +123,20 @@ export const metadata: Metadata = {
     type: "website",
     locale: "ar_SA",
     alternateLocale: ["en_US"],
-    url: "https://sakinah-app.com",
+    url: "https://skoon.vercel.app",
     siteName: "Sakinah - Mental Health & Mood Tracker",
     title: "Sakinah - Your Personal Mental Health Companion | سكينة",
     description: "Track your mood, write secure journals, and improve your mental wellness with our beautiful Progressive Web App. Features Islamic content including Quran verses and spiritual guidance.",
     images: [
       {
-        url: "https://sakinah-app.com/og-image.png",
+        url: "https://skoon.vercel.app/og-image.png",
         width: 1200,
         height: 630,
         alt: "Sakinah - Mental Health & Mood Tracker",
         type: "image/png",
       },
       {
-        url: "https://sakinah-app.com/og-image-ar.png",
+        url: "https://skoon.vercel.app/og-image-ar.png",
         width: 1200,
         height: 630,
         alt: "سكينة - تطبيق الصحة النفسية وتتبع المزاج",
@@ -145,7 +145,7 @@ export const metadata: Metadata = {
     ],
     videos: [
       {
-        url: "https://sakinah-app.com/demo-video.mp4",
+        url: "https://skoon.vercel.app/demo-video.mp4",
         width: 1280,
         height: 720,
         type: "video/mp4",
@@ -158,7 +158,7 @@ export const metadata: Metadata = {
     creator: "@SakinahApp",
     title: "Sakinah - Mental Health & Mood Tracker",
     description: "A secure Progressive Web App for mood tracking and mental wellness with Islamic features",
-    images: ["https://sakinah-app.com/twitter-image.png"],
+    images: ["https://skoon.vercel.app/twitter-image.png"],
   },
   other: {
     "mobile-web-app-capable": "yes",

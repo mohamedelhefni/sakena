@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemaps
-Sitemap: https://sakinah-app.com/sitemap.xml
+Sitemap: https://skoon.vercel.app/sitemap.xml
 
 # Disallow crawling of service worker and manifest files
 Disallow: /sw.js

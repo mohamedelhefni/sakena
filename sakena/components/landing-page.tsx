@@ -23,7 +23,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         };
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-        
+
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         };
@@ -31,14 +31,14 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
 
     const handleInstallApp = async () => {
         if (!deferredPrompt) return;
-        
+
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        
+
         if (outcome === 'accepted') {
             setCanInstall(false);
         }
-        
+
         setDeferredPrompt(null);
     };
 
@@ -122,7 +122,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                 install: "ثبت التطبيق",
                 features: [
                     "يعمل بدون إنترنت",
-                    "تجربة مشابهة للتطبيقات الأصلية", 
+                    "تجربة مشابهة للتطبيقات الأصلية",
                     "تحديثات تلقائية",
                     "سرعة عالية"
                 ]
@@ -252,27 +252,25 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                             {currentContent.title}
                         </h1>
                     </div>
-                    
+
                     <div className="flex items-center gap-4">
                         {/* Language Toggle */}
                         <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
                             <button
                                 onClick={() => setLanguage('ar')}
-                                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                                    language === 'ar'
+                                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${language === 'ar'
                                         ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
                                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
-                                }`}
+                                    }`}
                             >
                                 العربية
                             </button>
                             <button
                                 onClick={() => setLanguage('en')}
-                                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                                    language === 'en'
+                                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${language === 'en'
                                         ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
                                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
-                                }`}
+                                    }`}
                             >
                                 English
                             </button>
@@ -287,29 +285,29 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                     <div className="w-24 h-24 mx-auto mb-8 bg-gradient-to-br from-green-500 to-blue-500 rounded-3xl flex items-center justify-center shadow-xl">
                         <Heart className="w-12 h-12 text-white" />
                     </div>
-                    
+
                     <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent leading-tight">
                         {currentContent.title}
                     </h1>
-                    
+
                     <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
                         {currentContent.subtitle}
                     </p>
-                    
+
                     <p className="text-lg text-gray-500 dark:text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
                         {currentContent.description}
                     </p>
-                    
+
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                        <Button 
+                        <Button
                             onClick={onGetStarted}
-                            size="lg" 
+                            size="lg"
                             className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
                         >
                             <Heart className="w-5 h-5 mr-2" />
                             {currentContent.getStarted}
                         </Button>
-                        
+
                         {canInstall && (
                             <Button
                                 onClick={handleInstallApp}
@@ -348,7 +346,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                                 </div>
                                 <h3 className="text-xl font-semibold mb-2">{currentContent.dataPortability.export}</h3>
                                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                                    {language === 'ar' 
+                                    {language === 'ar'
                                         ? 'احفظ نسخة احتياطية من جميع بياناتك'
                                         : 'Save a backup of all your data'
                                     }
@@ -360,7 +358,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                                 </div>
                                 <h3 className="text-xl font-semibold mb-2">{currentContent.dataPortability.import}</h3>
                                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                                    {language === 'ar' 
+                                    {language === 'ar'
                                         ? 'استورد بياناتك من جهاز آخر'
                                         : 'Import your data from another device'
                                     }
@@ -415,7 +413,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                         {currentContent.features.title}
                     </h2>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
                     {currentContent.features.list.map((feature, index) => (
                         <Card key={index} className="text-center border-0 bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
