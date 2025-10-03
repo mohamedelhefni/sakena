@@ -37,7 +37,7 @@ self.addEventListener('install', (event) => {
       })
     ])
   );
-  
+
   // Force immediate activation
   self.skipWaiting();
 });
@@ -58,7 +58,7 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  
+
   // Claim all clients immediately
   self.clients.claim();
 });
@@ -67,22 +67,22 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
-  
+
   // Skip chrome-extension and internal requests
-  if (event.request.url.startsWith('chrome-extension://') || 
-      event.request.url.includes('/_next/webpack-hmr') ||
-      event.request.url.includes('/_next/static/hmr/')) {
+  if (event.request.url.startsWith('chrome-extension://') ||
+    event.request.url.includes('/_next/webpack-hmr') ||
+    event.request.url.includes('/_next/static/hmr/')) {
     return;
   }
 
   const url = new URL(event.request.url);
-  
+
   // Handle navigation requests (when user navigates to app routes)
   if (event.request.mode === 'navigate') {
     event.respondWith(handleAppShellRequest(event.request));
     return;
   }
-  
+
   // Handle API requests (for future server integration)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(handleApiRequest(event.request));
@@ -131,7 +131,7 @@ self.addEventListener('fetch', (event) => {
 async function handleAppShellRequest(request) {
   try {
     const url = new URL(request.url);
-    
+
     // For navigation requests to app routes, always serve from cache or fallback to root
     if (request.mode === 'navigate') {
       // Try to get the exact cached page first
@@ -139,13 +139,13 @@ async function handleAppShellRequest(request) {
       if (cachedResponse) {
         return cachedResponse;
       }
-      
+
       // For app routes, fallback to root page (which contains the React app)
       const rootCache = await caches.match('/');
       if (rootCache) {
         return rootCache;
       }
-      
+
       // If no root cache, try to fetch
       try {
         const networkResponse = await fetch('/');
@@ -177,7 +177,7 @@ async function handleAppShellRequest(request) {
     throw new Error('Network failed and no cache available');
   } catch (error) {
     console.log('App shell request failed:', error);
-    
+
     // For navigation requests, always try to serve the root page
     if (request.mode === 'navigate') {
       const rootCache = await caches.match('/');
@@ -185,10 +185,10 @@ async function handleAppShellRequest(request) {
         return rootCache;
       }
     }
-    
-    return new Response('App unavailable offline', { 
-      status: 503, 
-      statusText: 'Service Unavailable' 
+
+    return new Response('App unavailable offline', {
+      status: 503,
+      statusText: 'Service Unavailable'
     });
   }
 }
@@ -211,11 +211,11 @@ async function handleApiRequest(request) {
     if (cachedResponse) {
       return cachedResponse;
     }
-    
+
     // Return appropriate offline response
-    return new Response(JSON.stringify({ 
-      error: 'Offline', 
-      message: 'This feature requires an internet connection' 
+    return new Response(JSON.stringify({
+      error: 'Offline',
+      message: 'This feature requires an internet connection'
     }), {
       status: 503,
       headers: { 'Content-Type': 'application/json' }

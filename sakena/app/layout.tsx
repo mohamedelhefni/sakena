@@ -7,7 +7,6 @@ import { PWAFeatures } from "@/components/pwa-features";
 import { StructuredData } from "@/components/structured-data";
 import { OfflineAppInitializer } from "@/components/offline-app-initializer";
 import { PWAInstaller } from "@/components/pwa-installer";
-import { Analytics } from "@vercel/analytics/next"
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -215,7 +214,6 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <I18nProvider>
-            <Analytics />
             <OfflineAppInitializer />
             <StructuredData />
             <PWAFeatures />
